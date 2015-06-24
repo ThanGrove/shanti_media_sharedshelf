@@ -2,7 +2,7 @@
 This is a fork of jlk4p's sandbox module (https://www.drupal.org/sandbox/jlk4p/1808830) version 7.x-2.x to work on potential updates.
 
 
-# -- SUMMARY --
+## -- SUMMARY --
 
 The Media: SharedShelf module allows editors to choose their SharedShelf images 
 within the Media browser, both for fields and within WYSIWYG.
@@ -16,7 +16,7 @@ it), as well as search project image metadata to choose images to add as media
 items.
 
 
-# -- REQUIREMENTS --
+## -- REQUIREMENTS --
 
 Apache Solr File module available at http://drupal.org/project/apachesolr_file.
 Entity module available at http://drupal.org/project/entity.
@@ -24,7 +24,7 @@ Media module available at http://drupal.org/project/media.
 Views module available at http://drupal.org/project/views.
 
 
-# -- INSTALLATION --
+## -- INSTALLATION --
 
 Install this module as you would any other Drupal module. This module functions
 with the basic Solr configuration installation of the Apache Solr module files 
@@ -41,7 +41,7 @@ other necessary lines are located there. Then restart Solr and delete the
 Solr index from the Drupal admin panel before using this module.
 
 
-# -- CONFIGURATION --
+## -- CONFIGURATION --
 
 * Set the SharedShelf user authentication information in 
   Administration >> Configuration >> Media >> SharedShelf API Settings:
@@ -75,14 +75,14 @@ Solr index from the Drupal admin panel before using this module.
     preferred image style for the display type (default, teaser, etc.).
   - Save the configuration changes. 
 
-# -- TROUBLESHOOTING IMAGE DISPLAY ISSUES --
+## -- TROUBLESHOOTING IMAGE DISPLAY ISSUES --
 
 The Media module provides for displaying different file/media types. But you
 must indicate how these different file types get displayed. If thumbnail images 
 are not appearing, make sure you have enabled the display of SharedShelf Preview
 images by going through the last step in the configuration section above.
 
-# -- TROUBLESHOOTING IMAGE EMBED DISPLAY ISSUES --
+## -- TROUBLESHOOTING IMAGE EMBED DISPLAY ISSUES --
 
 When using the WYSIWYG embed option to add an image to an article or page, you
 may find that the image and metadata fields do not display. If you use Filtered
@@ -91,14 +91,14 @@ email address or URL in them as these types of information are transformed into
 HTML links. This creation of HTML links will break the JSON data format used
 in the WYSIWYG view and prevent the content from displaying.
 
-# -- TROUBLESHOOTING SOLR MEMORY ISSUES --
+## -- TROUBLESHOOTING SOLR MEMORY ISSUES --
 
 If you find that Apache Solr File is having memory errors when indexing content,
 you may want to reduce the number of items per cron job based on the local cache
 image size specified in this module. For example, for image size of 256(px) 
 using 10 items per cron job seems to run without causing memory errors.
 
-# -- CONTACT --
+## -- CONTACT --
 
 Current maintainer:
 * Jack Kelly (jlk4p) - http://drupal.org/user/1878962
