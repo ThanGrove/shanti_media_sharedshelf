@@ -1289,7 +1289,12 @@ function _media_sharedshelf_add_metadata($file) {
 		// search for summary field in data and use it for alt and title fields (added by ndg8f, 2015-06-25)
 		if ($sumkey = _media_sharedshelf_find_data_key($data, 'Summary')) {
 			if (!empty($data[$sumkey])) {
-				$wrapper->{'field_file_image_title_text'}->set($data[$sumkey]);
+				$ttxt = $data[$sumkey];
+				if (strlen($ttxt) > 255) {
+					$ttxt = substr($ttxt, 0, 253);
+					$ttxt = substr($ttxt, 0, strrpos($ttxt, ' ')) . '...';
+				}
+				$wrapper->{'field_file_image_title_text'}->set($ttxt);
 			}
 		}
     foreach ($basic_fields as $info) {
