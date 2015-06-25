@@ -81,6 +81,18 @@ function media_sharedshelf_number_images_per_page() {
  */
 function media_sharedshelf_basic_fields() {
   return array(
+    // Added by ndg8f, 2015-06-25
+  	'ssid' => array(
+      'field_name' => 'field_sharedshelf_ssid',
+      'type' => 'text',
+      'cardinality' => 1,
+      'default' => '',
+      'locked' => TRUE,
+      'settings' => array(
+        'label' => t('SSID'),
+        'description' => t('Shared Shelf ID number for this image'),
+      ),
+    ),  // End of add
     'creator' => array(
       'field_name' => 'field_sharedshelf_creator',
       'type' => 'text',

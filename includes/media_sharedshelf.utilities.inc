@@ -1286,22 +1286,42 @@ function _media_sharedshelf_add_metadata($file) {
     $wrapper = entity_metadata_wrapper('file', $file, $info_bundle);
     // Loop through the basic fields and save each data value to the entity.
     $basic_fields = media_sharedshelf_basic_fields();
+		// search for summary field in data and use it for alt and title fields (added by ndg8f, 2015-06-25)
+		if ($sumkey = _media_sharedshelf_find_data_key($data, 'Summary')) {
+			if (!empty($data[$sumkey])) {
+				$wrapper->{'field_file_image_title_text'}->set($data[$sumkey]);
+			}
+		}
     foreach ($basic_fields as $info) {
-      if (isset($data[$info['settings']['label']])) {
+    	// Added by ndg8f (2015-06-25) to deal with cases where there's not an exact match 
+    	// between drupal field label and shared shelf field name, 
+    	// finds ss field name containing drupal field label
+    	$flabel = $info['settings']['label'];
+    	$field_value = (isset($data[$flabel])) ? $data[$flabel] : FALSE;
+      if (!$field_value) {
+      	$dkey = _media_sharedshelf_find_data_key($data, $flabel);
+      	if ($dkey && isset($data[$dkey])) { $field_value = $data[$dkey]; }
+			}
+			// End of add
+			if (!empty($field_value)) { // was isset($data[$info['settings']['label']]) etc. below
+				if ($info['settings']['label'] == 'Title') {
+					$file->filename = $field_value;  // Use Title field for file name (may result in multiple file nodes with the same name)
+					$wrapper->{'field_file_image_alt_text'}->set($field_value);
+				}
         if ($info['cardinality'] == FIELD_CARDINALITY_UNLIMITED) {
-          if (is_array($data[$info['settings']['label']])) {
-            $wrapper->{$info['field_name']}->set($data[$info['settings']['label']]);
+          if (is_array($field_value)) {
+            $wrapper->{$info['field_name']}->set($field_value);
           }
           else {
-            $wrapper->{$info['field_name']}->set(array($data[$info['settings']['label']]));
+            $wrapper->{$info['field_name']}->set(array($field_value));
           }
         }
         elseif ($info['cardinality'] == '1') {
-          if (is_array($data[$info['settings']['label']])) {
-            $wrapper->{$info['field_name']}->set(implode($data[$info['settings']['label']]));
+          if (is_array($field_value)) {
+            $wrapper->{$info['field_name']}->set(implode($field_value));
           }
           else {
-            $wrapper->{$info['field_name']}->set($data[$info['settings']['label']]);
+            $wrapper->{$info['field_name']}->set($field_value);
           }
         }
       }
@@ -1322,4 +1342,23 @@ function _media_sharedshelf_add_metadata($file) {
     $wrapper->{$basic_fields['solr_search_data']['field_name']}->set($solr_search_data);
     $wrapper->save();
   }
+}
+
+/**
+ * Finds the first key in the data array that contains the substring
+ *
+ * @param array $data
+ *   The shared shelf metadata array
+ * 
+ * @param string $subst 
+ * 	 The substring to search for in the keys
+ */
+function _media_sharedshelf_find_data_key($data, $subst) {
+	$dkeys = array_keys($data);
+	foreach ($dkeys as $dk) {
+		if(strpos($dk, $subst) > -1) {
+			return $dk;
+		}
+	}
+	return FALSE;
 }
