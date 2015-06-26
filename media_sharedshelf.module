@@ -151,7 +151,7 @@ function media_sharedshelf_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'media_sharedshelf_api_form') {
     $form['#validate'][] = 'media_sharedshelf_api_form_connect_to_server';
   }
-	// Disable the Shared Shelf ID field populated by shared shelf on file importation
+	// Disable the Shared Shelf ID field populated by shared shelf on file importation (added by ndg8f)
 	if ($form_id == 'file_entity_edit') {
 		$form['field_sharedshelf_ssid']['#disabled'] = TRUE;
 		$form['field_sharedshelf_ssid']['#suffix'] = '<div class="form-item form-type-textfield form-item-field-sharedshelf-ssid-und-0-value form-disabled">
@@ -159,6 +159,10 @@ function media_sharedshelf_form_alter(&$form, &$form_state, $form_id) {
  					<input class="text-full form-text" disabled="disabled" type="text" value="' . $form['#entity']->uri .'" size="60" maxlength="255">
  					<div class="description">URI for image on this site</div></div>';
 		drupal_add_css('#edit-field-sharedshelf-ssid {float: left; padding-right: 25px;}', array('group' => CSS_THEME, 'type' => 'inline'));
+	}
+	
+	if ($form_id == 'media_sharedshelf_add') {
+		drupal_add_css('.view-content .item { float: left; padding: 5px; } ', array( 'group' => CSS_THEME, 'type' => 'inline'));
 	}
 }
 /**
