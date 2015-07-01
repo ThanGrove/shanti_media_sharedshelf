@@ -177,6 +177,8 @@ function media_sharedshelf_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Function to update shared shelf information
  * Called from the file edit form in drupal to which form_alter has added an update button.
+ * TODO: Finish this function for individual files. Then add trigger to admin interface to update all files, 
+ * 				or allow for updating when reimporting a set.
  */
 function media_sharedshelf_update_submit($form, &$form_state) {
 		dpm(array('form'=>$form, 'state' => $form_state), 'in update submit function');
