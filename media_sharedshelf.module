@@ -153,11 +153,19 @@ function media_sharedshelf_form_alter(&$form, &$form_state, $form_id) {
   }
 	// Disable the Shared Shelf ID field populated by shared shelf on file importation (added by ndg8f)
 	if ($form_id == 'file_entity_edit') {
+		dpm(array('form'=>$form, 'state' => $form_state), 'in form alter');
 		$form['field_sharedshelf_ssid']['#disabled'] = TRUE;
 		$form['field_sharedshelf_ssid']['#suffix'] = '<div class="form-item form-type-textfield form-item-field-sharedshelf-ssid-und-0-value form-disabled">
   				<label for="edit-field-sharedshelf-ssid-und-0-value">File URI </label>
  					<input class="text-full form-text" disabled="disabled" type="text" value="' . $form['#entity']->uri .'" size="60" maxlength="255">
  					<div class="description">URI for image on this site</div></div>';
+		$form['actions']['ssupdate'] = array(
+			'#type' => 'submit',
+			'#value' => t('Update'),
+			'#weight' => 12,
+			'#submit' => array('media_sharedshelf_update_submit'),
+			'#attributes' => array('title' => t("Update Shared Shelf Metadata")),
+		);
 		drupal_add_css('#edit-field-sharedshelf-ssid {float: left; padding-right: 25px;}', array('group' => CSS_THEME, 'type' => 'inline'));
 	}
 	
@@ -165,6 +173,17 @@ function media_sharedshelf_form_alter(&$form, &$form_state, $form_id) {
 		drupal_add_css('.view-content .item { float: left; padding: 5px; } ', array( 'group' => CSS_THEME, 'type' => 'inline'));
 	}
 }
+
+/**
+ * Function to update shared shelf information
+ * Called from the file edit form in drupal to which form_alter has added an update button.
+ */
+function media_sharedshelf_update_submit($form, &$form_state) {
+		dpm(array('form'=>$form, 'state' => $form_state), 'in update submit function');
+		$fid = (!empty($form['fid']['#value'])) ? $form['fid']['#value'] : FALSE;
+		drupal_set_message("Finish code to update Sharedshelf Metadata through API. Fid: $fid");
+}
+
 /**
  * Determine if a stream belongs to Media: SharedShelf.
  */
