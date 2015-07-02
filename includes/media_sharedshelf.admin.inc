@@ -1182,28 +1182,34 @@ function media_sharedshelf_add_media_object($url, $error_message, $form, &$form_
   return $success;
 }
 
+/**
+ * Function to confirm sharedshelf metadata update. Calls media_sharedshelf_update_confirm_submit
+ */
 function media_sharedshelf_update_confirm($form, &$form_state, $fid) {
 	$file = file_load($fid);
 	$fname = $file->filename;
 	$form['#file'] = $file;
   return confirm_form($form,
     t('Update Shared Shelf Metadata for "@fname"', array('@fname' => $fname)),
-    url('file/' . $fid),
+    url("file/$fid/edit"),
     t('<p>Are you sure you want to update the metadata for the image "@fname"?</p><p>This cannot be undone.</p>', array('@fname' => $fname)),
     t('Update'),
     t('Cancel')
   );
 }
 
+/**
+ * Updates a file's sharedshelf metadata if confirmed, using _media_sharedshelf_add_metadata() from media_sharedshelf.utilities.inc
+ * Returns to image file edit form
+ */
 function media_sharedshelf_update_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
-		// Do update here
 		$file = $form['#file'];
 		$fid = $file->fid;
 		module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
 		_media_sharedshelf_add_metadata($file);
   	drupal_set_message(t('Metadata for @fname has been updated from Shared Shelf', array('@fname' => $file->filename)));
-		$form_state['redirect'] = "file/$fid/edit";
 	} 
+	$form_state['redirect'] = "file/$fid/edit";
 }
 

@@ -76,7 +76,8 @@ function media_sharedshelf_menu() {
     'file' => 'includes/media_sharedshelf.admin.inc',
     'weight' => -1,
   );
-	
+	// Path to update an images Shared Shelf metadata
+	// Calls media_sharedshelf_update_confirm in media_sharedshelf.admin.inc
 	$items['media/%/update'] = array(
     'title' => 'Update',
     'page callback' => 'drupal_get_form',
@@ -189,8 +190,8 @@ function media_sharedshelf_form_alter(&$form, &$form_state, $form_id) {
 /**
  * Update Shared Shelf Information
  * Called from the file edit form in drupal to which form_alter has added an update button.
- * TODO: Finish this function for individual files. Then add trigger to admin interface to update all files, 
- * 				or allow for updating when reimporting a set.
+ * Calls media/{fid}/update
+ * TODO: Add trigger to admin interface to update all files, or allow for updating when reimporting a set.
  */
 function media_sharedshelf_update($form, &$form_state) {
 	$destination = array();
