@@ -192,7 +192,13 @@ function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) 
       '#options' => $option_image_sets,
     );
   }
-
+	
+	$form['sharedshelf']['add_project_imageset']['reimport_metadata'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Reimport Metadata'),
+    '#description' => t('If checked, will reimport metadata from Shared Shelf for images already on this site. <br/><strong>Warning:</strong> This will overwrite the currently stored metadata (title, description, etc.) for the images in this project.'),
+  );
+	
   $form['sharedshelf']['add_project_imageset']['submit_project_imageset'] = array(
     '#type' => 'submit',
     '#name' => 'add_project_imagesets',
@@ -1176,8 +1182,18 @@ function media_sharedshelf_add_media_object($url, $error_message, $form, &$form_
     }
   }
   else {
-    // Nothing was added since already in Drupal.
+    // Image already in Drupal.
     $success = 0;
+    // If checkbox checked, reimport metadata
+    if ($form_state['values']['reimport_metadata'] == 1) {
+    	module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
+    	if ($fid = $results[0]->fid) {
+				$file = file_load($fid);
+				_media_sharedshelf_add_metadata($file);
+			} else {
+				$success = FALSE;
+			}
+    }
   }
   return $success;
 }

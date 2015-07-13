@@ -105,5 +105,56 @@ function media_sharedshelf_uninstall() {
     field_delete_field($field_info['field_name']);
     _media_sharedshelf_error_log($field_info['field_name'] . ' field deleted during uninstall.');
   }
+	foreach (media_sharedshelf_user_fields() as $field_info) {
+		field_delete_field($field_info['field_name']);
+    _media_sharedshelf_error_log($field_info['field_name'] . ' field deleted during uninstall.');
+	}
   return array(array('success' => TRUE, 'query' => "Deleted all variables in the Media: SharedShelf namespace."));
+}
+
+/**
+ * Attach shared shelf logon info fields to user entity
+ */
+function media_sharedshelf_update_7000() {
+  // Attach shared shelf logon info fields to user entity
+  $fields = media_sharedshelf_user_fields();
+  foreach ($fields as $field) {
+		field_create_field($field);
+	}
+  $instances = array(
+  	'ssid' => array(
+	    'field_name' => 'field_shared_shelf_id',
+	    'entity_type' => 'user',
+	    'bundle' => 'user',
+	    'label' => 'Your Shared Shelf ID',
+	    'widget' => array(
+	      'type' => 'text', 
+	    	),
+	   ),
+	   'sspwd' => array(
+		    'field_name' => 'field_shared_shelf_password',
+		    'entity_type' => 'user',
+		    'bundle' => 'user',
+		    'label' => 'Your Shared Shelf Password',
+		    'widget' => array(
+		      'type' => 'text', 
+		    ),
+		 ),
+  );
+  foreach ($instances as $instance) {
+	  field_create_instance($instance);
+	}
+}
+
+function media_sharedshelf_user_fields() {
+	return array(
+  	'ssid' => array(
+	    'field_name' => 'field_shared_shelf_id',
+	    'type' => 'text',
+    ),
+    'sspwd' => array(
+			'field_name' => 'field_shared_shelf_password',
+    	'type' => 'text',
+		),
+  );
 }
