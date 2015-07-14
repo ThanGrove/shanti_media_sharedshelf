@@ -126,7 +126,13 @@ function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) 
     '#title' => t('SSID'),
     '#description' => t('Enter the SharedShelf ID for the image.'),
   );
-
+	
+	$form['sharedshelf']['add_sharedshelf_id']['reimport_metadata'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Reimport Metadata'),
+    '#description' => t('If checked, will reimport metadata from Shared Shelf for images already on this site. <br/><strong>Warning:</strong> This will overwrite the currently stored metadata (title, description, etc.) for this image.'),
+  );
+	
   $form['sharedshelf']['add_sharedshelf_id']['submit_ssid'] = array(
     '#type' => 'submit',
     '#name' => 'add_image',
@@ -1056,7 +1062,7 @@ function media_sharedshelf_add_ssid_submit($form, &$form_state) {
   module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
   if (_media_sharedshelf_full_size_image_exists($form_state['values']['ssid'])) {
     media_sharedshelf_add_media_object($ssid_url, $error_msg, $form, $form_state);
-  }
+  } 
   // $redirect = 'media/' . $file->fid;
   $redirect = 'admin/content/media/add/media_sharedshelf';
   if (isset($_GET['render']) && ($_GET['render'] == 'overlay')) {
@@ -1185,7 +1191,7 @@ function media_sharedshelf_add_media_object($url, $error_message, $form, &$form_
     // Image already in Drupal.
     $success = 0;
     // If checkbox checked, reimport metadata
-    if ($form_state['values']['reimport_metadata'] == 1) {
+    if (!empty($form_state['values']['reimport_metadata']) && $form_state['values']['reimport_metadata'] == 1) {
     	module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
     	if ($fid = $results[0]->fid) {
 				$file = file_load($fid);
