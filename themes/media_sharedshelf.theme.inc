@@ -36,7 +36,7 @@ function theme_media_sharedshelf_styles($variables) {
 }
 
 /**
- * Implements the them output for embedded output.
+ * Implements the theme output for embedded output.
  *
  * @param array $variables
  *   The theme variables needed for this format style.
