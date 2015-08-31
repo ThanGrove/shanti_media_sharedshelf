@@ -970,15 +970,8 @@ function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
         $i = $image_error_count = 0;
         do {
           foreach ($info['assets'] as $asset) {
-            $ssid_url = media_sharedshelf_variable_get('host_server') . '/assets/' . $asset['id'] . '/representation';
-            $error_msg = 'An error occurred in set ' . $asset_group_name . ' in project ' . $project_name . ' for SharedShelf image with SSID ' . $asset['id'] . ' and the file was not saved.';
-            // Make sure asset has image before allowing it to be added.
-            if (_media_sharedshelf_is_pdf($asset['id'])) {
-							if (media_sharedshelf_add_media_object($ssid_url, $error_msg, $form, $form_state, TRUE) === FALSE) {
-                $image_error_count++;
-              }
-            } else if (_media_sharedshelf_full_size_image_exists($asset['id'])) {
-              if (media_sharedshelf_add_media_object($ssid_url, $error_msg, $form, $form_state) === FALSE) {
+            if (_media_sharedshelf_is_pdf($asset['id']) || _media_sharedshelf_full_size_image_exists($asset['id'])) {
+              if (media_sharedshelf_add_media_object($asset['id'], $error_msg, $form, $form_state) === FALSE) {
                 $image_error_count++;
               }
             }
@@ -1017,11 +1010,11 @@ function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
       $i = $image_error_count = 0;
       do {
         foreach ($info['assets'] as $asset) {
-          $ssid_url = media_sharedshelf_variable_get('host_server') . '/assets/' . $asset['id'] . '/representation';
+          //$ssid_url = media_sharedshelf_variable_get('host_server') . '/assets/' . $asset['id'] . '/representation';
           $error_msg = 'An error occurred with project ' . $project_name . ' for SharedShelf image with SSID ' . $asset['id'] . ' and the file was not saved.';
           // Make sure asset has image before allowing it to be added.
           if (_media_sharedshelf_full_size_image_exists($asset['id'])) {
-            if (media_sharedshelf_add_media_object($ssid_url, $error_msg, $form, $form_state) === FALSE) {
+            if (media_sharedshelf_add_media_object($asset['id'], $error_msg, $form, $form_state) === FALSE) {
               $image_error_count++;
             }
           }
@@ -1060,12 +1053,12 @@ function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
  *   The state of the form.
  */
 function media_sharedshelf_add_ssid_submit($form, &$form_state) {
-  $ssid_url = media_sharedshelf_variable_get('host_server') . '/assets/' . $form_state['values']['ssid'] . '/representation';
+  //$ssid_url = media_sharedshelf_variable_get('host_server') . '/assets/' . $form_state['values']['ssid'] . '/representation';
   $error_msg = 'An error occurred with SharedShelf image ID ' . $form_state['values']['ssid'] . 'and no file was saved.';
   // Make sure asset has image before allowing it to be added.
   module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
   if (_media_sharedshelf_full_size_image_exists($form_state['values']['ssid'])) {
-    media_sharedshelf_add_media_object($ssid_url, $error_msg, $form, $form_state);
+    media_sharedshelf_add_media_object($form_state['values']['ssid'], $error_msg, $form, $form_state);
   } 
   // $redirect = 'media/' . $file->fid;
   $redirect = 'admin/content/media/add/media_sharedshelf';
@@ -1102,7 +1095,7 @@ function media_sharedshelf_add_search_submit($form, &$form_state) {
         // Make sure asset has image before allowing it to be added.
         if (_media_sharedshelf_full_size_image_exists($key)) {
           $image_count++;
-          if (media_sharedshelf_add_media_object($ssid_url, $error_msg, $form, $form_state) === FALSE) {
+          if (media_sharedshelf_add_media_object($key, $error_msg, $form, $form_state) === FALSE) {
             $image_error_count++;
           }
         }
@@ -1123,7 +1116,7 @@ function media_sharedshelf_add_search_submit($form, &$form_state) {
         // Make sure asset has image before allowing it to be added.
         if (_media_sharedshelf_full_size_image_exists($asset_id)) {
           $image_count++;
-          if (media_sharedshelf_add_media_object($ssid_url, $error_msg, $form, $form_state) === FALSE) {
+          if (media_sharedshelf_add_media_object($asset_id, $error_msg, $form, $form_state) === FALSE) {
             $image_error_count++;
           }
         }
@@ -1154,7 +1147,8 @@ function media_sharedshelf_add_search_submit($form, &$form_state) {
  *   already exists in the collection. Use === for testing because FALSE is
  *   returned if an error occurs when adding the item.
  */
-function media_sharedshelf_add_media_object($url, $error_message, $form, &$form_state, $ispdf = FALSE) {
+function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form_state) {
+	$ssid_url = media_sharedshelf_variable_get('host_server') . '/assets/' . $ssid . '/representation';
   $success = 1;
   // Define the appropriate internal URI to use e.g., sharedshelf://a/...
   $uri = media_sharedshelf_media_parse($url);
@@ -1171,7 +1165,7 @@ function media_sharedshelf_add_media_object($url, $error_message, $form, &$form_
     $defaults = array(
       'display' => TRUE,
     );
-dpm(array('form' => $form, 'form state' => $form_state), 'in add media object');
+
     $file = file_uri_to_object($uri);
 
     if (file_save($file)) {

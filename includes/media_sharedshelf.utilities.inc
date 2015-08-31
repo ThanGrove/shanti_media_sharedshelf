@@ -829,7 +829,6 @@ function _media_sharedshelf_get_full_size_image_mimetype($image_reference) {
 function _media_sharedshelf_get_image_full_size_url($image_reference) {
   global $_media_sharedshelf_cookies;
   $info = array('url' => '', 'success' => 0);
-	dpm($image_reference, 'img ref');
   if (is_numeric($image_reference)) {
     $info = _media_sharedshelf_api_assets_representation_details_get($image_reference);
   } else {
@@ -1359,6 +1358,13 @@ function _media_sharedshelf_add_metadata($file, $ssid = FALSE) {
         }
       }
     }
+		
+		// Add thumbnail for pdfs
+		if ($ssid && _media_sharedshelf_is_pdf($ssid)) {
+			$thumb = _media_sharedshelf_create_pdf_thumb($ssid);
+			
+    }
+		
     // Create a single text block containing all the SharedShelf metadata
     // which will be used strictly for Solr document creation.
     $solr_search_data = '';
@@ -1394,4 +1400,33 @@ function _media_sharedshelf_find_data_key($data, $subst) {
 		}
 	}
 	return FALSE;
+}
+
+/**
+ * Creates a file object for a PDF Document file thumbnail to be used in teasers and preview
+ * 
+ * @param int $ssid
+ * 	The Shared Shelf resource ID
+ * 
+ * @return file
+ * 	The file object representing the thumb image added for PDF
+ * 
+ */
+function _media_sharedshelf_create_pdf_thumb($ssid) {
+	
+	$ssid_url = _media_sharedshelf_get_image_full_size_url($ssid) . '_size4';
+	$dest = "{MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER}/{$ssid}.jpg";
+	$docpath = system_retrieve_file($ssid_url, $dest, FALSE, FILE_EXISTS_REPLACE);
+	$file = (object) array(
+		'filename' => basename($docpath),
+		'filepath' => $docpath,
+		'filemime' => file_get_mimetype($docpath),
+		'filesize' => filesize($docpath),
+		'uid' => 1,
+		'status' => FILE_STATUS_PERMANENT,
+		'timestamp' => time(),
+		'uri' => $docpath,
+		'type' => "image",
+	);
+	drupal_write_record('file_managed', $file);
 }
