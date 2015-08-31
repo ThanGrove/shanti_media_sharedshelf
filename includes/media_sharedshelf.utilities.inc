@@ -754,6 +754,24 @@ function _media_sharedshelf_image_url_from_size($asset_id, $size = 5) {
 }
 
 /**
+ * Checks to see if the Shared Shelf resource is a PDF
+ *
+ * @param string $asset_id
+ *   Represents the resources's SharedShelf ID.
+ *
+ * @return bool
+ *   Returns TRUE if resource is a PDF; otherwise FALSE.
+ */
+function _media_sharedshelf_is_pdf($asset_id) {
+	$info = _media_sharedshelf_api_assets_representation_details_get($asset_id);
+	if (isset($info['type']) && $info['type'] == 'pdf') {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+/**
  * Checks to see if the specified full size image exists.
  *
  * @param string $image_reference
@@ -811,6 +829,7 @@ function _media_sharedshelf_get_full_size_image_mimetype($image_reference) {
 function _media_sharedshelf_get_image_full_size_url($image_reference) {
   global $_media_sharedshelf_cookies;
   $info = array('url' => '', 'success' => 0);
+	dpm($image_reference, 'img ref');
   if (is_numeric($image_reference)) {
     $info = _media_sharedshelf_api_assets_representation_details_get($image_reference);
   } else {
@@ -1274,11 +1293,15 @@ function _media_sharedshelf_create_search_filter($field, $value, $type = 'string
  *
  * @param file_entity $file
  *   The file entity just created for which metadata should be retrieved.
+ * 
+ * @param int $ssid
+ * 	 The Shared Shelf asset ID, used for PDFs where the file stored is an image version of PDF
  */
-function _media_sharedshelf_add_metadata($file) {
+function _media_sharedshelf_add_metadata($file, $ssid = FALSE) {
   // Attach the SharedShelf metadata to the local item and save it.
   // Get metadata for the image if we know the asset id.
-  if ($asset_id = _media_sharedshelf_get_asset_id($file->uri)) {
+  if ($ssid || $asset_id = _media_sharedshelf_get_asset_id($file->uri)) {
+  	$asset_id = ($ssid) ? $ssid : $asset_id;
     $data = _media_sharedshelf_get_asset_metadata($asset_id);
     // Use an entity wrapper to retrieve the fields for this file.
     $file_type = media_sharedshelf_file_type($file);
@@ -1294,9 +1317,14 @@ function _media_sharedshelf_add_metadata($file) {
 					$ttxt = substr($ttxt, 0, 253);
 					$ttxt = substr($ttxt, 0, strrpos($ttxt, ' ')) . '...';
 				}
-				$wrapper->{'field_file_image_title_text'}->set($ttxt);
+				try { 
+					$wrapper->{'field_file_image_title_text'}->set($ttxt);
+				} catch (EntityMetadataWrapperException $emwe) {
+					watchdog('media_sharedshelf.utilities.inc: 1319', $emwe->getMessage());
+				}
 			}
 		}
+		
     foreach ($basic_fields as $info) {
     	// Added by ndg8f (2015-06-25) to deal with cases where there's not an exact match 
     	// between drupal field label and shared shelf field name, 

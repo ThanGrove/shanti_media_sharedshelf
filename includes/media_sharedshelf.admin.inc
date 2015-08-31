@@ -973,7 +973,11 @@ function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
             $ssid_url = media_sharedshelf_variable_get('host_server') . '/assets/' . $asset['id'] . '/representation';
             $error_msg = 'An error occurred in set ' . $asset_group_name . ' in project ' . $project_name . ' for SharedShelf image with SSID ' . $asset['id'] . ' and the file was not saved.';
             // Make sure asset has image before allowing it to be added.
-            if (_media_sharedshelf_full_size_image_exists($asset['id'])) {
+            if (_media_sharedshelf_is_pdf($asset['id'])) {
+							if (media_sharedshelf_add_media_object($ssid_url, $error_msg, $form, $form_state, TRUE) === FALSE) {
+                $image_error_count++;
+              }
+            } else if (_media_sharedshelf_full_size_image_exists($asset['id'])) {
               if (media_sharedshelf_add_media_object($ssid_url, $error_msg, $form, $form_state) === FALSE) {
                 $image_error_count++;
               }
@@ -1150,7 +1154,7 @@ function media_sharedshelf_add_search_submit($form, &$form_state) {
  *   already exists in the collection. Use === for testing because FALSE is
  *   returned if an error occurs when adding the item.
  */
-function media_sharedshelf_add_media_object($url, $error_message, $form, &$form_state) {
+function media_sharedshelf_add_media_object($url, $error_message, $form, &$form_state, $ispdf = FALSE) {
   $success = 1;
   // Define the appropriate internal URI to use e.g., sharedshelf://a/...
   $uri = media_sharedshelf_media_parse($url);
@@ -1167,7 +1171,7 @@ function media_sharedshelf_add_media_object($url, $error_message, $form, &$form_
     $defaults = array(
       'display' => TRUE,
     );
-
+dpm(array('form' => $form, 'form state' => $form_state), 'in add media object');
     $file = file_uri_to_object($uri);
 
     if (file_save($file)) {
@@ -1180,7 +1184,7 @@ function media_sharedshelf_add_media_object($url, $error_message, $form, &$form_
       $file->file[LANGUAGE_NONE][0] = (array) $file + $defaults;
       $file->is_new = TRUE;
       field_attach_insert('media', $file);
-      _media_sharedshelf_add_metadata($file);
+      _media_sharedshelf_add_metadata($file, $ssid);
     }
     else {
       _media_sharedshelf_error_log($error_message);
@@ -1234,4 +1238,3 @@ function media_sharedshelf_update_confirm_submit($form, &$form_state) {
 	} 
 	$form_state['redirect'] = "file/$fid/edit";
 }
-

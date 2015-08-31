@@ -291,13 +291,16 @@ function media_sharedshelf_file_type($file) {
   if (strstr($file->filemime, 'image')) {
     return array('image');
   }
-  // Shared Shelf will support audio and video so put this in here now.
+  // Shared Shelf will support audio, video, and pdf so put this in here now.
   elseif (strstr($file->filemime, 'video')) {
     return array('video');
   }
   elseif (strstr($file->filemime, 'audio')) {
     return array('audio');
-  }
+  } 
+  elseif (strstr($file->filemime, 'pdf')) {
+    return array('image'); // Treat pdfs from shared shelf as images (ndg, 2015-08-28)
+	}
 }
 
 /**
