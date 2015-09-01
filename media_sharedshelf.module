@@ -584,3 +584,33 @@ function media_sharedshelf_wysiwyg_add_submit($form, &$form_state) {
     $form_state['redirect'] = 'admin/content/file';
   }
 }
+
+/**
+ * Implements hook_preprocess_html to adjust global body clases and the like
+ */
+function media_sharedshelf_preprocess_html(&$variables) {
+	// Add "pdf" to body class if pdf file (for styling)
+	$sysmain = (isset($variables['page']['content']['system_main'])) ? $variables['page']['content']['system_main'] : FALSE;
+	// First check if it's a file entity
+	if($sysmain && isset($sysmain['#entity_type']) && $sysmain['#entity_type'] == 'file') {
+		// Then check if mime type is application/pdf and if so, add or adjust body class using "page-file-"
+		if($sysmain['file']['#file']->filemime == 'application/pdf') {
+			if ($index = array_search('page-file-', $variables['classes_array'])) {
+				$variables['classes_array'][$index] = 'page-file-pdf';
+			} else {
+				$variables['classes_array'][] = 'page-file-pdf';
+			}
+		}
+	}
+}
+
+/**
+ * Implements hook_preprocess_file_entity for PDFs
+ */
+function media_sharedshelf_preprocess_file_entity(&$variables) {
+	// If PDF add, iframe_url variable to Shared Shelf version of PDF
+	if ($variables['filemime'] == 'application/pdf') {
+		//dpm($variables, 'vars');
+		$variables['iframe_url'] = file_create_url($variables['uri']);
+	}
+}
