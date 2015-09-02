@@ -23,7 +23,7 @@ define('MEDIA_SHAREDSHELF_DEFAULT_LOCAL_CACHE_IMAGE_SIZE', 3);
 
 define('MEDIA_SHAREDSHELF_NOT_APPLICABLE', 'N/A');
 
-define('MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER', 'public://pdfthumbs');
+define('MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER', 'public://media-sharedshelf/pdfthumbs');
 /**
  * Used for storing the cookies returned by SharedShelf after successful login
  * so that successive calls can be performed.
