@@ -754,6 +754,24 @@ function _media_sharedshelf_image_url_from_size($asset_id, $size = 5) {
 }
 
 /**
+ * Checks to see if the Shared Shelf resource is a PDF
+ *
+ * @param string $asset_id
+ *   Represents the resources's SharedShelf ID.
+ *
+ * @return bool
+ *   Returns TRUE if resource is a PDF; otherwise FALSE.
+ */
+function _media_sharedshelf_is_pdf($asset_id) {
+	$info = _media_sharedshelf_api_assets_representation_details_get($asset_id);
+	if (isset($info['type']) && $info['type'] == 'pdf') {
+		return TRUE;
+	} else {
+		return FALSE;
+	}
+}
+
+/**
  * Checks to see if the specified full size image exists.
  *
  * @param string $image_reference
@@ -1274,11 +1292,16 @@ function _media_sharedshelf_create_search_filter($field, $value, $type = 'string
  *
  * @param file_entity $file
  *   The file entity just created for which metadata should be retrieved.
+ * 
+ * @param int $ssid
+ * 	 The Shared Shelf asset ID, used for PDFs where the file stored is an image version of PDF
  */
-function _media_sharedshelf_add_metadata($file) {
+function _media_sharedshelf_add_metadata($file, $ssid = FALSE) {
+	
   // Attach the SharedShelf metadata to the local item and save it.
   // Get metadata for the image if we know the asset id.
-  if ($asset_id = _media_sharedshelf_get_asset_id($file->uri)) {
+  if ($ssid || $asset_id = _media_sharedshelf_get_asset_id($file->uri)) {
+  	$asset_id = ($ssid) ? $ssid : $asset_id;
     $data = _media_sharedshelf_get_asset_metadata($asset_id);
     // Use an entity wrapper to retrieve the fields for this file.
     $file_type = media_sharedshelf_file_type($file);
@@ -1294,9 +1317,14 @@ function _media_sharedshelf_add_metadata($file) {
 					$ttxt = substr($ttxt, 0, 253);
 					$ttxt = substr($ttxt, 0, strrpos($ttxt, ' ')) . '...';
 				}
-				$wrapper->{'field_file_image_title_text'}->set($ttxt);
+				try { 
+					$wrapper->{'field_file_image_title_text'}->set($ttxt);
+				} catch (EntityMetadataWrapperException $emwe) {
+					watchdog('media_sharedshelf.utilities.inc: 1319', $emwe->getMessage());
+				}
 			}
 		}
+		
     foreach ($basic_fields as $info) {
     	// Added by ndg8f (2015-06-25) to deal with cases where there's not an exact match 
     	// between drupal field label and shared shelf field name, 
@@ -1331,6 +1359,12 @@ function _media_sharedshelf_add_metadata($file) {
         }
       }
     }
+		// Add thumbnail for pdfs
+		if ($ssid && _media_sharedshelf_is_pdf($ssid)) {
+			$thumb = _media_sharedshelf_create_pdf_thumb($ssid);
+			
+    }
+		
     // Create a single text block containing all the SharedShelf metadata
     // which will be used strictly for Solr document creation.
     $solr_search_data = '';
@@ -1366,4 +1400,41 @@ function _media_sharedshelf_find_data_key($data, $subst) {
 		}
 	}
 	return FALSE;
+}
+
+/**
+ * Creates a file object for a PDF Document file thumbnail to be used in teasers and preview
+ * 
+ * @param int $ssid
+ * 	The Shared Shelf resource ID
+ * 
+ * @return file
+ * 	The file object representing the thumb image added for PDF
+ * 
+ */
+function _media_sharedshelf_create_pdf_thumb($ssid) {
+	$dir = MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER;
+	if (file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
+		$ssid_url = _media_sharedshelf_get_image_full_size_url($ssid) . '_size4';
+		$dest = MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER . "/{$ssid}.jpg";
+		$docpath = system_retrieve_file($ssid_url, $dest, FALSE, FILE_EXISTS_REPLACE);
+		$file = (object) array(
+			'filename' => basename($docpath),
+			'filepath' => $docpath,
+			'filemime' => file_get_mimetype($docpath),
+			'filesize' => filesize($docpath),
+			'uid' => 1,
+			'status' => FILE_STATUS_PERMANENT,
+			'timestamp' => time(),
+			'uri' => $docpath,
+			'type' => "image",
+		);
+		drupal_write_record('file_managed', $file);
+	} else {
+		drupal_set_message(
+			t('Media_sharedshelf Module could not create or write to the pdf thumbnail directory: @dir', 
+					array('@dir' => MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER)),
+			'warning', 
+			FALSE);
+	}
 }

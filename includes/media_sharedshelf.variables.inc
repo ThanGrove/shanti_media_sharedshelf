@@ -23,6 +23,7 @@ define('MEDIA_SHAREDSHELF_DEFAULT_LOCAL_CACHE_IMAGE_SIZE', 3);
 
 define('MEDIA_SHAREDSHELF_NOT_APPLICABLE', 'N/A');
 
+define('MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER', 'public://media-sharedshelf/pdfthumbs');
 /**
  * Used for storing the cookies returned by SharedShelf after successful login
  * so that successive calls can be performed.
@@ -184,6 +185,7 @@ function media_sharedshelf_basic_fields() {
         'description' => t('This field should only be modified to remove email addresses and URLs in Drupal when embedding an image and its data in a filtered or full HTML text format. This field is intended to store a complete copy of the Shared Shelf metadata for the media object to be used by the Solr indexing process only.'),
       ),
     ),
+    
   );
 }
 

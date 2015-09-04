@@ -291,13 +291,16 @@ function media_sharedshelf_file_type($file) {
   if (strstr($file->filemime, 'image')) {
     return array('image');
   }
-  // Shared Shelf will support audio and video so put this in here now.
+  // Shared Shelf will support audio, video, and pdf so put this in here now.
   elseif (strstr($file->filemime, 'video')) {
     return array('video');
   }
   elseif (strstr($file->filemime, 'audio')) {
     return array('audio');
-  }
+  } 
+  elseif (strstr($file->filemime, 'pdf')) {
+    return array('image'); // Treat pdfs from shared shelf as images (ndg, 2015-08-28)
+	}
 }
 
 /**
@@ -580,4 +583,58 @@ function media_sharedshelf_wysiwyg_add_submit($form, &$form_state) {
   else {
     $form_state['redirect'] = 'admin/content/file';
   }
+}
+
+/**
+ * Implement hook_file_delete for removing PDF thumbs when node is deleted
+ */
+function media_sharedshelf_file_delete($file) {
+	//dpm($file, 'file being deleted');
+	$wrapper = entity_metadata_wrapper('file', $file);
+	// PDF thumbs are also image files but without an ssid. So only delete thumbs for PDFs (with ssid)
+	if (!empty($wrapper->field_sharedshelf_ssid)) {
+		$ssid = $wrapper->field_sharedshelf_ssid->value();
+		if (!empty($ssid)) {
+			watchdog('media sharedshelf', 'Deleting file with ssid: ' . $ssid);
+			$uri = MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER . '/' . $ssid . '.jpg';
+			$files = file_load_multiple(array(), array('uri' => $uri));
+			foreach ($files as $fid => $file) {
+				entity_delete('file', $fid);
+				drupal_set_message(t("Thumbnail for @filename (fid @fid) has been deleted.", array(
+					'@filename' => $file->filename,
+					'@fid' => $fid,
+				)));
+			}
+		}
+	}
+}
+
+/**
+ * Implements hook_preprocess_html to adjust global body clases and the like
+ */
+function media_sharedshelf_preprocess_html(&$variables) {
+	// Add "pdf" to body class if pdf file (for styling)
+	$sysmain = (isset($variables['page']['content']['system_main'])) ? $variables['page']['content']['system_main'] : FALSE;
+	// First check if it's a file entity
+	if($sysmain && isset($sysmain['#entity_type']) && $sysmain['#entity_type'] == 'file') {
+		// Then check if mime type is application/pdf and if so, add or adjust body class using "page-file-"
+		if(!empty($sysmain['file']['#file']->filemime) && $sysmain['file']['#file']->filemime == 'application/pdf') {
+			if ($index = array_search('page-file-', $variables['classes_array'])) {
+				$variables['classes_array'][$index] = 'page-file-pdf';
+			} else {
+				$variables['classes_array'][] = 'page-file-pdf';
+			}
+		}
+	}
+}
+
+/**
+ * Implements hook_preprocess_file_entity for PDFs
+ */
+function media_sharedshelf_preprocess_file_entity(&$variables) {
+	// If PDF add, iframe_url variable to Shared Shelf version of PDF
+	if ($variables['filemime'] == 'application/pdf') {
+		//dpm($variables, 'vars');
+		$variables['iframe_url'] = file_create_url($variables['uri']);
+	}
 }

@@ -102,12 +102,22 @@ function media_sharedshelf_uninstall() {
   drupal_load('module', 'media');
   drupal_load('module', 'field');
   foreach (media_sharedshelf_basic_fields() as $field_info) {
+  	$instance = field_info_instance('file', $field_info['field_name'], 'image');
+		field_delete_instance($instance);
     field_delete_field($field_info['field_name']);
-    _media_sharedshelf_error_log($field_info['field_name'] . ' field deleted during uninstall.');
+    _media_sharedshelf_error_log('File (image) ' . $field_info['field_name'] . ' field deleted during uninstall.');
   }
 	foreach (media_sharedshelf_user_fields() as $field_info) {
+  	$instance = field_info_instance('user', $field_info['field_name'], 'user');
+		field_delete_instance($instance);
 		field_delete_field($field_info['field_name']);
-    _media_sharedshelf_error_log($field_info['field_name'] . ' field deleted during uninstall.');
+    _media_sharedshelf_error_log('User ' . $field_info['field_name'] . ' field deleted during uninstall.');
+	}
+	foreach (media_sharedshelf_doc_fields() as $field_info) {
+  	$instance = field_info_instance('file', $field_info['field_name'], 'document');
+		field_delete_instance($instance);
+		field_delete_field($field_info['field_name']);
+    _media_sharedshelf_error_log('File (document) ' . $field_info['field_name'] . ' field deleted during uninstall.');
 	}
   return array(array('success' => TRUE, 'query' => "Deleted all variables in the Media: SharedShelf namespace."));
 }
