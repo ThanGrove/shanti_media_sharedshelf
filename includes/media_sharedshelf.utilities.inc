@@ -474,6 +474,12 @@ function _media_sharedshelf_api_asset_group_assets_get($asset_group_id, $start_p
  */
 function _media_sharedshelf_api_representation_size_get($asset_id, $size = 0) {
   global $_media_sharedshelf_cookies;
+	// Check Cache for previously made calls
+	$cache_var = "sharedshelf_{$asset_id}_{$size}";
+	if ($cache = cache_get($cache_var)) {
+		return $cache->data;
+	}
+	
   $representation = array('mimetype' => '', 'bytestream' => '');
   $options = array('headers' => array('Cookie' => $_media_sharedshelf_cookies), 'method' => 'GET');
   $sharedshelf_url = url(media_sharedshelf_variable_get('host_server') . "/assets/$asset_id/representation/size/$size");
@@ -506,6 +512,8 @@ function _media_sharedshelf_api_representation_size_get($asset_id, $size = 0) {
       $status_message = isset($response->status_message) ? $response->status_message : '';
       _media_sharedshelf_error_log($error_message, $response->code, $status_message);
   }
+	//watchdog('media_sharedshelf cache', $cache_var);
+	cache_set($cache_var, $representation, 'cache'); // Set cache if it makes it here
   return $representation;
 }
 
@@ -580,6 +588,10 @@ function _media_sharedshelf_api_assets_get($asset_id) {
  */
 function _media_sharedshelf_api_assets_representation_details_get($asset_id) {
   global $_media_sharedshelf_cookies;
+	$cache_var = "sharedshelf_repdetails_${asset_id}";
+	if ($cacheval = cache_get($cache_var)) {
+		return $cacheval->data;
+	}
   $result = array('url' => '', 'name' => '', 'success' => FALSE);
   $options = array('headers' => array('Cookie' => $_media_sharedshelf_cookies), 'method' => 'GET');
   $sharedshelf_url = url(media_sharedshelf_variable_get('host_server') . "/assets/$asset_id/representation/details");
@@ -607,6 +619,7 @@ function _media_sharedshelf_api_assets_representation_details_get($asset_id) {
       $status_message = isset($response->status_message) ? $response->status_message : '';
       _media_sharedshelf_error_log($error_message, $response->code, $status_message);
   }
+	cache_set($cache_var, $result, 'cache');
   return $result;
 }
 

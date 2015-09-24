@@ -65,6 +65,19 @@ function media_sharedshelf_settings_form() {
     '#options' => media_sharedshelf_image_sizes(),
   );
 
+  $form['media_settings']['image_settings']['clear_cache_button'] = array(
+    '#type' => 'button',
+    '#value' => t('Clear Cache Variables'),
+    '#submit' => cache_clear_all(),
+    '#suffix' => '<div class="description">' . t('Clear stored results from Shared Shelf to refresh data. Use this when changes have been made in shared shelf that are not reflected on this site.') . '</div><div id="mss-cc-result"></div>',
+    '#ajax' => array(
+      'callback' => 'media_sharedshelf_clear_cache',
+      'wrapper' => 'mss-cc-result',
+      'method' => 'replace',
+      'effect' => 'fade',
+		)
+  );
+	
   $form['media_settings']['form_defaults'] = array(
     '#type' => 'fieldset',
     '#title' => t('Form Default Settings'),
@@ -87,6 +100,14 @@ function media_sharedshelf_settings_form() {
   );
 
   return system_settings_form($form);
+}
+
+/**
+ * Clear the Drupal cache for Shared shelf HTTP calls. Called from settings form submit button
+ */
+function media_sharedshelf_clear_cache($form, $form_state) {
+	cache_clear_all();
+	return '<div id="mss-cc-result" class="messages status">All cached Sharedshelf data has been cleared!</div>';
 }
 
 /**
