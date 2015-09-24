@@ -847,10 +847,12 @@ function _media_sharedshelf_get_image_full_size_url($image_reference) {
   } else {
    _media_sharedshelf_error_log('SSID format is not valid.');
   }
-	watchdog('media sharedshelf', "Processing: $image_reference");
-	watchdog('media sharedshelf', serialize($info));
   if (isset($info['success']) && $info['success']) {
   	// PDFs full size is just the same url so return that 
+  	if (!isset($info['type'])) {
+  		watchdog('media sharedshelf', "Processing: $image_reference info type not set");
+			watchdog('media sharedshelf', serialize($info));
+  	}
   	if($info['type'] == 'pdf') { return $info['url']; }
     $options = array('headers' => array('Cookie' => $_media_sharedshelf_cookies), 'method' => 'GET');
     $response = drupal_http_request(url($info['url']), $options);
