@@ -847,6 +847,7 @@ function _media_sharedshelf_get_image_full_size_url($image_reference) {
   } else {
    _media_sharedshelf_error_log('SSID format is not valid.');
   }
+	watchdog('media sharedshelf', "Processing: $image_reference");
   if (isset($info['success']) && $info['success']) {
   	// PDFs full size is just the same url so return that 
   	if($info['type'] == 'pdf') { return $info['url']; }
@@ -880,6 +881,7 @@ function _media_sharedshelf_get_image_full_size_url($image_reference) {
       default:
         // If we got here there is an issue, so we want to log the error.
         $error_message = isset($response->error) ? $response->error : '';
+				$error_message .= " ($image_reference)";
         $status_message = isset($response->status_message) ? $response->status_message : '';
         _media_sharedshelf_error_log($error_message, $response->code, $status_message);
         if (isset($response->redirect_url)) {
