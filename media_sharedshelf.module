@@ -642,7 +642,8 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
 	if ($variables['view_mode'] == 'full') {
 		if (isset($variables['field_sharedshelf_solr_search'][0]['value'])) {
 			module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
-			$variables['ssdata'] = _media_sharedshelf_process_ssdata($variables['field_sharedshelf_solr_search'][0]['value']);
+			$ssfields = _media_sharedshelf_process_ssdata($variables['field_sharedshelf_solr_search'][0]['value']);
+			$variables += $ssfields;
 		}
 		// If PDF add, iframe_url variable to Shared Shelf version of PDF
 		if ($variables['filemime'] == 'application/pdf') {

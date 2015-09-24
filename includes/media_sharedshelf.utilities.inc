@@ -1476,15 +1476,23 @@ function _media_sharedshelf_process_ssdata($raw) {
 			$ssfields[$field[0]] = '';
 		}
 	}
-	$out = array('metadata' => array(), 'fields' => array());
+	$out = array('ssmetadata' => '', 'ssfields' => '');
 	$inmeta = TRUE;
 	foreach ($ssfields as $fnm => $fval) {
 		if (empty($fnm) && empty($fval)) { continue; }
+		$class = str_replace(' ', '-', strtolower($fnm));
+		$class = str_replace('(', '', $class);
+		$class = str_replace(')', '', $class);
+		$theme_array = array(
+			'class' => 'field-name-' . $class,
+			'label' => $fnm,
+			'value' => $fval,
+		);
 		if ($inmeta) {
-			$out['metadata'][$fnm] = $fval;
+			$out['ssmetadata'] .= theme('media_sharedshelf_custom_field', $theme_array);
 			if ($fnm == 'Updated By') { $inmeta = FALSE; }
 		} else {
-			$out['fields'][$fnm] = $fval;
+			$out['ssfields'] .= theme('media_sharedshelf_custom_field', $theme_array);
 		}
 	}
 	return $out;
