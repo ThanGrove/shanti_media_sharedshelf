@@ -956,7 +956,8 @@ function media_sharedshelf_add_submit($form, &$form_state) {
   elseif ($form_state['triggering_element']['#name'] == 'add_search_results') {
     media_sharedshelf_add_search_submit($form, $form_state);
   }
-	views_invalidate_cache();
+	drupal_set_message('Clearing views data cache');
+	cache_clear_all('*', 'cache_views_data', TRUE);
 }
 
 /**
