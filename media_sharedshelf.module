@@ -141,6 +141,11 @@ function media_sharedshelf_theme($existing, $type, $theme, $path) {
       'file' => 'media_sharedshelf.theme.inc',
       'path' => $path . '/themes',
     ),
+    'media_sharedshelf_custom_field' => array(
+      'variables' => array('class' => NULL, 'label' => NULL, 'value' => NULL),
+      'template' => 'media_sharedshelf.custom_field',
+      'path' => $path . '/themes',
+    ),
   );
 }
 
@@ -629,12 +634,20 @@ function media_sharedshelf_preprocess_html(&$variables) {
 }
 
 /**
- * Implements hook_preprocess_file_entity for PDFs
+ * Implements hook_preprocess_file_entity 
+ *   Adds an array of shared shelf custom meta data
+ *   For PDFs adds the iframe_url for displaying the pdf in page.
  */
 function media_sharedshelf_preprocess_file_entity(&$variables) {
-	// If PDF add, iframe_url variable to Shared Shelf version of PDF
-	if ($variables['filemime'] == 'application/pdf') {
-		//dpm($variables, 'vars');
-		$variables['iframe_url'] = file_create_url($variables['uri']);
+	if ($variables['view_mode'] == 'full') {
+		if (isset($variables['field_sharedshelf_solr_search'][0]['value'])) {
+			module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
+			$variables['ssdata'] = _media_sharedshelf_process_ssdata($variables['field_sharedshelf_solr_search'][0]['value']);
+		}
+		// If PDF add, iframe_url variable to Shared Shelf version of PDF
+		if ($variables['filemime'] == 'application/pdf') {
+			$variables['iframe_url'] = file_create_url($variables['uri']);
+		}
 	}
 }
+

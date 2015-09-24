@@ -848,6 +848,8 @@ function _media_sharedshelf_get_image_full_size_url($image_reference) {
    _media_sharedshelf_error_log('SSID format is not valid.');
   }
   if (isset($info['success']) && $info['success']) {
+  	// PDFs full size is just the same url so return that 
+  	if($info['type'] == 'pdf') { return $info['url']; }
     $options = array('headers' => array('Cookie' => $_media_sharedshelf_cookies), 'method' => 'GET');
     $response = drupal_http_request(url($info['url']), $options);
     switch ($response->code) {
@@ -1450,4 +1452,40 @@ function _media_sharedshelf_create_pdf_thumb($ssid) {
 			'warning', 
 			FALSE);
 	}
+}
+
+/**
+ * Process the raw (solr search) data from Shared Shelf to get all project-custom field values for item
+ * 
+ * @param string $raw
+ * 	The raw sharedshelf string with all field values stored as field_sharedshelf_solr_search
+ * 
+ * @return array
+ * 	An array with two main item: metadata and fields. Each of these contains an array of label -> value pairs.
+ * 
+ */
+ 
+function _media_sharedshelf_process_ssdata($raw) {
+	$rar = explode("\n", $raw);
+	$ssfields = array();
+	foreach($rar as $el) {
+		$field = explode(':', $el, 2);
+		if (count($field) == 2) {
+			$ssfields[$field[0]] = $field[1];
+		} else {
+			$ssfields[$field[0]] = '';
+		}
+	}
+	$out = array('metadata' => array(), 'fields' => array());
+	$inmeta = TRUE;
+	foreach ($ssfields as $fnm => $fval) {
+		if (empty($fnm) && empty($fval)) { continue; }
+		if ($inmeta) {
+			$out['metadata'][$fnm] = $fval;
+			if ($fnm == 'Updated By') { $inmeta = FALSE; }
+		} else {
+			$out['fields'][$fnm] = $fval;
+		}
+	}
+	return $out;
 }
