@@ -813,6 +813,7 @@ function _media_sharedshelf_full_size_image_exists($image_reference) {
 function _media_sharedshelf_get_full_size_image_mimetype($image_reference) {
   $mimetype = 'application/octet-stream';
   $url = _media_sharedshelf_get_image_full_size_url($image_reference);
+	watchdog('media sharedshelf', "url for $image_reference is: $url");
   if ($file_pointer = curl_init($url)) {
     if ($file_pointer !== FALSE) {
       $info = _media_sharedshelf_api_assets_representation_details_get($image_reference);
