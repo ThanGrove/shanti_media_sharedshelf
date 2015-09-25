@@ -590,12 +590,16 @@ function _media_sharedshelf_api_assets_representation_details_get($asset_id) {
   global $_media_sharedshelf_cookies;
 	$cache_var = "sharedshelf_repdetails_${asset_id}";
 	if ($cacheval = cache_get($cache_var)) {
-		return $cacheval->data;
+		$result = $cacheval->data;
+		if (is_object($result)) { $result = (array)$result; }
+		if (isset($result['url']) && isset($result['name'])) { return $result; }
 	}
+	
   $result = array('url' => '', 'name' => '', 'success' => FALSE);
   $options = array('headers' => array('Cookie' => $_media_sharedshelf_cookies), 'method' => 'GET');
   $sharedshelf_url = url(media_sharedshelf_variable_get('host_server') . "/assets/$asset_id/representation/details");
   $response = drupal_http_request($sharedshelf_url, $options);
+	
   switch ($response->code) {
     case 401:
     case 403:
@@ -605,6 +609,7 @@ function _media_sharedshelf_api_assets_representation_details_get($asset_id) {
       $_media_sharedshelf_cookies = _media_sharedshelf_api_account_post(media_sharedshelf_variable_get('login_email'), media_sharedshelf_variable_get('login_password'));
       $options['headers']['Cookie'] = $_media_sharedshelf_cookies;
       $response = drupal_http_request($sharedshelf_url, $options);
+			
     case 200:
       // Since the request may have been submitted again because of access
       // issues, make sure response is good before attempting to get the data.
@@ -619,6 +624,11 @@ function _media_sharedshelf_api_assets_representation_details_get($asset_id) {
       $status_message = isset($response->status_message) ? $response->status_message : '';
       _media_sharedshelf_error_log($error_message, $response->code, $status_message);
   }
+	//if (isset($response)) {dpm($response, 'response');} * 	
+	if ($response->data == '{"success": true}') {
+		 $result = json_decode('{"name": "ss_noimage-0.png", "success": true, "url": "http://catalog.sharedshelf.artstor.org/images/ss_noimage-0.png"}');
+	}
+	if (is_object($result)) { $result = (array)$result; }
 	cache_set($cache_var, $result, 'cache');
   return $result;
 }
@@ -848,13 +858,10 @@ function _media_sharedshelf_get_image_full_size_url($image_reference) {
   } else {
    _media_sharedshelf_error_log('SSID format is not valid.');
   }
+
   if (isset($info['success']) && $info['success']) {
   	// PDFs full size is just the same url so return that 
-  	if (!isset($info['type'])) {
-  		watchdog('media sharedshelf', "Processing: $image_reference info type not set");
-			watchdog('media sharedshelf', serialize($info));
-  	}
-  	if($info['type'] == 'pdf') { return $info['url']; }
+  	if(isset($info['type']) && $info['type'] == 'pdf') { return $info['url']; }
     $options = array('headers' => array('Cookie' => $_media_sharedshelf_cookies), 'method' => 'GET');
     $response = drupal_http_request(url($info['url']), $options);
     switch ($response->code) {
