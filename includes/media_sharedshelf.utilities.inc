@@ -1467,6 +1467,7 @@ function _media_sharedshelf_create_pdf_thumb($ssid) {
 	}
 }
 
+
 /**
  * Process the raw (solr search) data from Shared Shelf to get all project-custom field values for item
  * 
@@ -1474,22 +1475,38 @@ function _media_sharedshelf_create_pdf_thumb($ssid) {
  * 	The raw sharedshelf string with all field values stored as field_sharedshelf_solr_search
  * 
  * @return array
- * 	An array with two main item: metadata and fields. Each of these contains an array of label -> value pairs.
+ * 	An array of the processed shared shelf data in field label -> value pairs.
  * 
  */
- 
-function _media_sharedshelf_process_ssdata($raw, $type='image') {
-	$inline = ($type == 'pdf') ? TRUE : FALSE;
-	$rar = explode("\n", $raw);
+ function _media_sharedshelf_process_raw($raw) {
+ 	$rar = explode("\n", $raw);
 	$ssfields = array();
 	foreach($rar as $el) {
 		$field = explode(':', $el, 2);
 		if (count($field) == 2) {
-			$ssfields[$field[0]] = $field[1];
+			$ssfields[$field[0]] = rtrim($field[1]);
 		} else {
 			$ssfields[$field[0]] = '';
 		}
 	}
+	return $ssfields;
+ }
+ 
+ /**
+  * Process ssdata into themed output for display in file records
+  * 
+  * @param string $raw
+  * 	The raw sharedshelf string with all field values stored as field_sharedshelf_solr_search
+  * @param string $type
+  * 	The type of file the raw data comes from, either image or pdf
+  * 
+  * @return array
+  * 	An array with two main items: metadata and fields. Each of these contains an array of label -> value pairs.
+  * 
+  */
+function _media_sharedshelf_process_ssdata($raw, $type='image') {
+	$inline = ($type == 'pdf') ? TRUE : FALSE;
+	$ssfields = _media_sharedshelf_process_raw($raw);
 	$out = array('ssmetadata' => '', 'ssfields' => '');
 	$inmeta = TRUE;
 	foreach ($ssfields as $fnm => $fval) {

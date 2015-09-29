@@ -591,6 +591,30 @@ function media_sharedshelf_wysiwyg_add_submit($form, &$form_state) {
 }
 
 /**
+ * Implement hook_file_presave to convert Spatial data to Geofield, if both exist
+ * 
+ * If the file entity has a geofield called field_spatial_coordinates and the Shared shelf metadata has spatial coordiates
+ * process the SS data into the geofield
+ */
+ function media_sharedshelf_file_presave($file) {
+	$fw = entity_metadata_wrapper('file', $file);
+	if (isset($fw->field_spatial_coordinates) && empty($fw->field_spatial_coordinates->value())) {
+		module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
+		$ssfields = _media_sharedshelf_process_raw($fw->field_sharedshelf_solr_search->value());
+		if (!empty($ssfields['Spatial Coordinates'])) {
+			$latlon = explode(',', $ssfields['Spatial Coordinates']);
+			$values = array(
+				'lat' => $latlon[0],
+				'lon' => $latlon[1],
+			);
+			$values = geofield_compute_values($values, 'latlon');
+			$file->field_spatial_coordinates['und'] = array($values);
+			//dpm($file, 'spatial coordinates added');
+		} 
+	}  
+ }
+ 
+/**
  * Implement hook_file_delete for removing PDF thumbs when node is deleted
  */
 function media_sharedshelf_file_delete($file) {
@@ -600,7 +624,7 @@ function media_sharedshelf_file_delete($file) {
 	if (!empty($wrapper->field_sharedshelf_ssid)) {
 		$ssid = $wrapper->field_sharedshelf_ssid->value();
 		if (!empty($ssid)) {
-			watchdog('media sharedshelf', 'Deleting file with ssid: ' . $ssid);
+			watchdog('media sharedshelf', 'Deleting file (ssid: ' . $ssid . ') and clearing views cache');
 			$uri = MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER . '/' . $ssid . '.jpg';
 			$files = file_load_multiple(array(), array('uri' => $uri));
 			foreach ($files as $fid => $file) {
@@ -610,6 +634,7 @@ function media_sharedshelf_file_delete($file) {
 					'@fid' => $fid,
 				)));
 			}
+			cache_clear_all('*', 'cache_views_data', TRUE);
 		}
 	}
 }
