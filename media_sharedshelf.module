@@ -142,7 +142,7 @@ function media_sharedshelf_theme($existing, $type, $theme, $path) {
       'path' => $path . '/themes',
     ),
     'media_sharedshelf_custom_field' => array(
-      'variables' => array('class' => NULL, 'label' => NULL, 'value' => NULL),
+      'variables' => array('class' => NULL, 'inline' => NULL, 'label' => NULL, 'value' => NULL),
       'template' => 'media_sharedshelf.custom_field',
       'path' => $path . '/themes',
     ),
@@ -642,7 +642,8 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
 	if ($variables['view_mode'] == 'full') {
 		if (isset($variables['field_sharedshelf_solr_search'][0]['value'])) {
 			module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
-			$ssfields = _media_sharedshelf_process_ssdata($variables['field_sharedshelf_solr_search'][0]['value']);
+			$type = (strpos($variables['filemime'], 'pdf') > -1) ? 'pdf' : 'image';
+			$ssfields = _media_sharedshelf_process_ssdata($variables['field_sharedshelf_solr_search'][0]['value'], $type);
 			$variables += $ssfields;
 		}
 		// If PDF add, iframe_url variable to Shared Shelf version of PDF

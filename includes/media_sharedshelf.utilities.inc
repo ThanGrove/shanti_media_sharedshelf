@@ -1478,7 +1478,8 @@ function _media_sharedshelf_create_pdf_thumb($ssid) {
  * 
  */
  
-function _media_sharedshelf_process_ssdata($raw) {
+function _media_sharedshelf_process_ssdata($raw, $type='image') {
+	$inline = ($type == 'pdf') ? TRUE : FALSE;
 	$rar = explode("\n", $raw);
 	$ssfields = array();
 	foreach($rar as $el) {
@@ -1492,12 +1493,16 @@ function _media_sharedshelf_process_ssdata($raw) {
 	$out = array('ssmetadata' => '', 'ssfields' => '');
 	$inmeta = TRUE;
 	foreach ($ssfields as $fnm => $fval) {
-		if (empty($fnm) && empty($fval)) { continue; }
-		$class = str_replace(' ', '-', strtolower($fnm));
-		$class = str_replace('(', '', $class);
-		$class = str_replace(')', '', $class);
+		$fval = rtrim($fval);
+		if (empty($fnm) || empty($fval)) { continue; }
+		if (strpos($fnm, '(') > -1) {
+			$pts = explode('(', $fnm);
+			$fnm = $pts[0];
+		}
+		$class = str_replace(str_split(' \\/:*?"<>|+&!,'), '-', strtolower($fnm));
 		$theme_array = array(
 			'class' => 'field-name-' . $class,
+			'inline' => $inline,
 			'label' => $fnm,
 			'value' => $fval,
 		);
