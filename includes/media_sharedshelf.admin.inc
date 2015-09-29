@@ -102,6 +102,11 @@ function media_sharedshelf_settings_form() {
   return system_settings_form($form);
 }
 
+function media_sharedshelf_field_mapping_settings($form, $form_state) {
+	dpm("need to fill this out");
+  return $form;
+ }
+
 /**
  * Clear the Drupal cache for Shared shelf HTTP calls. Called from settings form submit button
  */

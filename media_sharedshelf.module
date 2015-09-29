@@ -65,6 +65,15 @@ function media_sharedshelf_menu() {
     'access arguments' => array('configure Media SharedShelf'),
     'file' => 'includes/media_sharedshelf.admin.inc',
   );
+  $items['admin/config/media/media_sharedshelf/settings/field-mapping'] = array(
+    'title' => 'SharedShelf Field Mapping Settings',
+    'description' => 'Configure optional settings for Media: SharedShelf to map fields',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('media_sharedshelf_field_mapping_settings'),
+    'access arguments' => array('configure Media SharedShelf'),
+    'file' => 'includes/media_sharedshelf.admin.inc',
+  );
+  
   // Add a menu item to the media content section for adding SharedShelf images
   // as media objects.
   $items['media/add/media_sharedshelf'] = array(
