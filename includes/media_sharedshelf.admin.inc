@@ -709,18 +709,17 @@ function media_sharedshelf_add_submit($form, &$form_state) {
  */
 function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
 	module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
-	watchdog('media ss', 'In set submit');
 	$project_id = $form_state['values']['project'];
 	$project_name = _media_sharedshelf_get_project_name($project_id);
 	$asset_groups = (isset($form_state['values']['image_sets'])) ? $form_state['values']['image_sets'] : array();
+	$reimport_str = ($form_state['values']['reimport_metadata'] == 1) ? "and updated" : "without updating metadata";
 
 	// If asset groups were selected then add all images associated with each
 	// asset group. Otherwise add all images associated with the project selected.
 	if (count($asset_groups) > 0) {
 		// For each asset group add its images.
-		watchdog('media ss', 'Processing ' . count($asset_groups) . ' asset groups');
+
 		foreach ($asset_groups as $asset_group_id) {
-			watchdog('media ss', "Processing $asset_group_id");
 			$info = _media_sharedshelf_api_asset_group_assets_get($asset_group_id, 0, media_sharedshelf_variable_get('search_images_per_page'));
 			$asset_group_name = _media_sharedshelf_get_asset_group_name($project_id, $asset_group_id);
 			if (isset($info['success']) && $info['success']) {
@@ -762,25 +761,18 @@ function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
 			if (($info['total'] % media_sharedshelf_variable_get('search_images_per_page')) != 0) {
 				$page_count = $page_count + 1;
 			}
-			$i = $image_error_count = 0;
+			$i = $image_error_count = $act = 0;
 			do {
-				watchdog('media ss', "Processing " . count($info['assets']) . " assets");
 				foreach ($info['assets'] as $asset) {
-					
-					watchdog('media ss', "Processing " . $asset['id']);
+					$act++;
 					//$ssid_url = media_sharedshelf_variable_get('host_server') . '/assets/' . $asset['id'] . '/representation';
 					$error_msg = 'An error occurred with project ' . $project_name . ' for SharedShelf image with SSID ' . $asset['id'] . ' and the file was not saved.';
 					// Make sure asset has image before allowing it to be added.
 					if (_media_sharedshelf_is_pdf($asset['id']) || _media_sharedshelf_full_size_image_exists($asset['id'])) {
 						if (media_sharedshelf_add_media_object($asset['id'], $error_msg, $form, $form_state) === FALSE) {
 							$image_error_count++;
-							watchdog('media ss', 'failed');
-						} else {
-							watchdog('media ss', 'success');
-						}
-					} else {
-						watchdog('media ss', 'no full sized image');
-					}
+						} 
+					} 
 				}
 				$i = $i + 1;
 				if ($i != $page_count) {
@@ -793,6 +785,7 @@ function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
 			} else {
 				drupal_set_message(check_plain(t('There were @errorcount problems adding some of the images for the !projectname project.', array('@errorcount' => $image_error_count, '!projectname' => $project_name)), 'error'));
 			}
+			drupal_set_message(($act - $image_error_count) . " resources successfully imported " . $reimport_str);
 		} else {
 			drupal_set_message(check_plain(t('There was a problem accessing the images for the !projectname project.', array('!projectname' => $project_name)), 'error'));
 		}
@@ -819,7 +812,11 @@ function media_sharedshelf_add_ssid_submit($form, &$form_state) {
 	// Make sure asset has image before allowing it to be added.
 	module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
 	if (_media_sharedshelf_is_pdf($form_state['values']['ssid']) || _media_sharedshelf_full_size_image_exists($form_state['values']['ssid'])) {
-		media_sharedshelf_add_media_object($form_state['values']['ssid'], $error_msg, $form, $form_state);
+		if (media_sharedshelf_add_media_object($form_state['values']['ssid'], $error_msg, $form, $form_state) !== FALSE) {
+			drupal_set_message("Resource {$form_state['values']['ssid']} was successfully imported.");
+		} else {
+			drupal_set_message("There was a problem importing resource {$form_state['values']['ssid']}.");
+		}
 	}
 	// $redirect = 'media/' . $file->fid;
 	$redirect = 'admin/content/media/add/media_sharedshelf';
@@ -946,10 +943,8 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 	} else {
 		// Image already in Drupal.
 		$success = 0;
-		watchdog('media ss', 'image already imported into site');
 		// If checkbox checked, reimport metadata
 		if (!empty($form_state['values']['reimport_metadata']) && $form_state['values']['reimport_metadata'] == 1) {
-			watchdog('media ss', 'reimporting');
 			module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
 			if ($fid = $results[0] -> fid) {
 				$file = file_load($fid);
@@ -957,9 +952,7 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 			} else {
 				$success = FALSE;
 			}
-		} else {
-			watchdog('media ss', 'Not reimporting');
-		}
+		} 
 	}
 	return $success;
 }
