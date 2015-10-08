@@ -909,6 +909,7 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 	$url = media_sharedshelf_variable_get('host_server') . '/assets/' . $ssid . '/representation';
 	$success = 1;
 	// Define the appropriate internal URI to use e.g., sharedshelf://a/...
+	watchdog('media_sharedshelf', "Url is: $url");
 	$uri = media_sharedshelf_media_parse($url);
 
 	// Check to see this item is already added to the media.
@@ -924,6 +925,7 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 
 		//watchdog('media sharedshelf getting file for uri', $uri);
 		$file = file_uri_to_object($uri);
+    		$file->status = FILE_STATUS_PERMANENT;
 		//watchdog('media sharedshelf file object', serialize($file));
 		if (file_save($file)) {
 			field_attach_submit('media', $file, $form, $form_state);

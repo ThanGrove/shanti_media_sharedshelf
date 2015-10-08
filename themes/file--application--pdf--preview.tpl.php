@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Default theme implementation to display a file. Adaptd from file_entity.tpl.php
+ * Default theme implementation to display a file.
  *
  * Available variables:
  * - $label: the (sanitized) file name of the file.
@@ -46,6 +46,7 @@
  * - $zebra: Outputs either "even" or "odd". Useful for zebra striping in
  *   listings.
  * - $id: Position of the file. Increments each time it's output.
+ * - $thumb_path: path to Sharedshelf thumbnail added in media_sharedshelf_preprocess_file_entity()
  *
  * File status variables:
  * - $view_mode: View mode, e.g. 'default', 'full', etc.
@@ -67,8 +68,10 @@
  *
  * @ingroup themeable
  */
+
 ?>
-<div id="<?php print $id; ?>" class="<?php print $classes ?> clearfix"<?php print $attributes; ?>>
+<div id="<?php print $id; ?>" class="<?php print $classes ?>"<?php print $attributes; ?>>
+
   <?php print render($title_prefix); ?>
   <?php if (!$page): ?>
     <h2<?php print $title_attributes; ?>><a href="<?php print $file_url; ?>"><?php print $label; ?></a></h2>
@@ -81,14 +84,8 @@
     </div>
   <?php endif; ?>
 
-  <div class="content clearfix"<?php print $content_attributes; ?>>HI
-    <?php
-      // We hide the links now so that we can render them later.
-      hide($content['links']);
-	  //dpm($content, 'content array');
-      print render($content['file']);
-	  if (isset($ssfields)) { print $ssfields; } else { print render($content); }
-    ?>
+  <div class="content"<?php print $content_attributes; ?>>
+    	   <a href="/file/<?php print $file->fid; ?>"><img typeof="foaf:Image" src="<?php print $thumb_path; ?>" height="200" width="200" /></a>
   </div>
 
   <?php print render($content['links']); ?>
