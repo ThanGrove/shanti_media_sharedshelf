@@ -925,7 +925,6 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 
 		//watchdog('media sharedshelf getting file for uri', $uri);
 		$file = file_uri_to_object($uri);
-    		$file->status = FILE_STATUS_PERMANENT;
 		//watchdog('media sharedshelf file object', serialize($file));
 		if (file_save($file)) {
 			field_attach_submit('media', $file, $form, $form_state);

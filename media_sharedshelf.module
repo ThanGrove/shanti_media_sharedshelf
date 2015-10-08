@@ -672,7 +672,6 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
 		$style_name = (in_array($variables['view_mode'], array('preview', 'teaser'))) ? 'media_thumbnail' : 'full';
 		$uri = str_replace('sharedshelf://a/', 'public://media-sharedshelf/', $variables['uri']);
 		$variables['image_url'] = image_style_url($style_name, $uri);
-		dpm($variables, 'vars new 2');
 	}
 	if ($variables['view_mode'] == 'full') {
 		if (isset($variables['field_sharedshelf_solr_search'][0]['value'])) {
