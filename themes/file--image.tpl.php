@@ -85,8 +85,11 @@
     <?php
       // We hide the links now so that we can render them later.
       hide($content['links']);
-	  //dpm($content, 'content array');
+	  
+    	  if ($view_mode == 'preview') { print '<a href="' . url('file/' . $file->fid) . '">' ;}
       print render($content['file']);
+    	  if ($view_mode == 'preview') { print '</a>' ;}
+		  
 	  if (isset($ssfields)) { print $ssfields; } else { print render($content); }
     ?>
   </div>
