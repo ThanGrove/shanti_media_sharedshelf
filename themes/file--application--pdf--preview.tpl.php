@@ -85,7 +85,7 @@
   <?php endif; ?>
 
   <div class="content"<?php print $content_attributes; ?>>
-    	   <a href="/file/<?php print $file->fid; ?>"><img typeof="foaf:Image" src="<?php print $thumb_path; ?>" height="200" width="200" /></a>
+    	   <a href="/file/<?php print $file->fid; ?>"><img typeof="foaf:Image" src="<?php print $thumb_path; ?>" height="300" /></a>
   </div>
 
   <?php print render($content['links']); ?>

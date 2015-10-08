@@ -662,7 +662,7 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
 	if ($variables['filemime'] == 'application/pdf') {
 		if (isset($variables['field_sharedshelf_ssid'][LANGUAGE_NONE][0]['value'])) {
 			$asset_id = $variables['field_sharedshelf_ssid'][LANGUAGE_NONE][0]['value'];
-			$variables['thumb_path'] = media_sharedshelf_variable_get('host_server') . "/assets/$asset_id/representation/size/2";
+			$variables['thumb_path'] = media_sharedshelf_variable_get('host_server') . "/assets/$asset_id/representation/size/3";
 		}
 		if ($variables['view_mode'] == 'full') {
 			// If PDF full view, add iframe_url variable to Shared Shelf version of PDF
