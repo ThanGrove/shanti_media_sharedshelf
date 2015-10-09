@@ -64,7 +64,7 @@ Solr index from the Drupal admin panel before using this module.
   - Make sure the image type is selected below the File option at the bottom 
     of the settings.
 
- * Enable the file display for SharedShelf images:
+* Enable the file display for SharedShelf images:
  Administration >> Structure >> File types >> Image
 
   - Choose the Manage File Display tab and repeat the steps below for each 
