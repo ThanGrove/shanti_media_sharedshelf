@@ -150,6 +150,18 @@ function media_sharedshelf_theme($existing, $type, $theme, $path) {
 }
 
 /**
+ * Implements hook_theme_registry_alter
+ *   To add this module's theme folder to the theme registry
+ */
+ function media_sharedshelf_theme_registry_alter(&$theme_registry) {
+	$mod_path = drupal_get_path('module', 'media_sharedshelf');
+	$theme_registry_copy = $theme_registry;
+	// munge on a copy
+	_theme_process_registry($theme_registry_copy, 'phptemplate', 'theme_engine', 'pow', $mod_path);
+	$theme_registry += array_diff_key($theme_registry_copy, $theme_registry);
+}
+
+/**
  * Implements hook_file_styles_filter().
  */
 function media_sharedshelf_file_styles_filter($object) {
@@ -305,7 +317,7 @@ function media_sharedshelf_file_type($file) {
   } 
   elseif (strstr($file->filemime, 'pdf')) {
     return array('image'); // Treat pdfs from shared shelf as images (ndg, 2015-08-28)
-	}
+  }
 }
 
 /**
@@ -615,28 +627,10 @@ function media_sharedshelf_wysiwyg_add_submit($form, &$form_state) {
  }
  
 /**
- * Implement hook_file_delete for removing PDF thumbs when node is deleted
+ * Implement hook_file_delete to clear views cache when files deleted
  */
 function media_sharedshelf_file_delete($file) {
-	//dpm($file, 'file being deleted');
-	$wrapper = entity_metadata_wrapper('file', $file);
-	// PDF thumbs are also image files but without an ssid. So only delete thumbs for PDFs (with ssid)
-	if (!empty($wrapper->field_sharedshelf_ssid)) {
-		$ssid = $wrapper->field_sharedshelf_ssid->value();
-		if (!empty($ssid)) {
-			watchdog('media sharedshelf', 'Deleting file (ssid: ' . $ssid . ') and clearing views cache');
-			$uri = MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER . '/' . $ssid . '.jpg';
-			$files = file_load_multiple(array(), array('uri' => $uri));
-			foreach ($files as $fid => $file) {
-				entity_delete('file', $fid);
-				drupal_set_message(t("Thumbnail for @filename (fid @fid) has been deleted.", array(
-					'@filename' => $file->filename,
-					'@fid' => $fid,
-				)));
-			}
-			cache_clear_all('*', 'cache_views_data', TRUE);
-		}
-	}
+	cache_clear_all('*', 'cache_views_data', TRUE);
 }
 
 /**
@@ -664,16 +658,27 @@ function media_sharedshelf_preprocess_html(&$variables) {
  *   For PDFs adds the iframe_url for displaying the pdf in page.
  */
 function media_sharedshelf_preprocess_file_entity(&$variables) {
+	global $base_url;
+	if ($variables['filemime'] == 'application/pdf') {
+		if (isset($variables['field_sharedshelf_ssid'][LANGUAGE_NONE][0]['value'])) {
+			$asset_id = $variables['field_sharedshelf_ssid'][LANGUAGE_NONE][0]['value'];
+			$variables['thumb_path'] = media_sharedshelf_variable_get('host_server') . "/assets/$asset_id/representation/size/3";
+		}
+		if ($variables['view_mode'] == 'full') {
+			// If PDF full view, add iframe_url variable to Shared Shelf version of PDF
+			$variables['iframe_url'] = file_create_url($variables['uri']);
+		}
+	} else {
+		$style_name = (in_array($variables['view_mode'], array('preview', 'teaser'))) ? 'media_thumbnail' : 'full';
+		$uri = str_replace('sharedshelf://a/', 'public://media-sharedshelf/', $variables['uri']);
+		$variables['image_url'] = image_style_url($style_name, $uri);
+	}
 	if ($variables['view_mode'] == 'full') {
 		if (isset($variables['field_sharedshelf_solr_search'][0]['value'])) {
 			module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
 			$type = (strpos($variables['filemime'], 'pdf') > -1) ? 'pdf' : 'image';
 			$ssfields = _media_sharedshelf_process_ssdata($variables['field_sharedshelf_solr_search'][0]['value'], $type);
 			$variables += $ssfields;
-		}
-		// If PDF add, iframe_url variable to Shared Shelf version of PDF
-		if ($variables['filemime'] == 'application/pdf') {
-			$variables['iframe_url'] = file_create_url($variables['uri']);
 		}
 	}
 }

@@ -113,14 +113,14 @@ function media_sharedshelf_uninstall() {
 		field_delete_field($field_info['field_name']);
     _media_sharedshelf_error_log('User ' . $field_info['field_name'] . ' field deleted during uninstall.');
 	}
-	/* Doc fields function not defined yet
+	/* Doc fields function is not yet defined
 	foreach (media_sharedshelf_doc_fields() as $field_info) {
   	$instance = field_info_instance('file', $field_info['field_name'], 'document');
 		field_delete_instance($instance);
 		field_delete_field($field_info['field_name']);
     _media_sharedshelf_error_log('File (document) ' . $field_info['field_name'] . ' field deleted during uninstall.');
 	}
-	 **/
+	 */
   return array(array('success' => TRUE, 'query' => "Deleted all variables in the Media: SharedShelf namespace."));
 }
 

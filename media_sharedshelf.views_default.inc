@@ -51,13 +51,14 @@ function media_sharedshelf_views_default_views() {
 	$handler->display->display_options['filters']['uri']['field'] = 'uri';
 	$handler->display->display_options['filters']['uri']['operator'] = 'contains';
 	$handler->display->display_options['filters']['uri']['value'] = 'sharedshelf';
-	/* Filter criterion: File: Path */
+	/* Filter criterion: File: Path
 	$handler->display->display_options['filters']['uri_1']['id'] = 'uri_1';
 	$handler->display->display_options['filters']['uri_1']['table'] = 'file_managed';
 	$handler->display->display_options['filters']['uri_1']['field'] = 'uri';
 	$handler->display->display_options['filters']['uri_1']['operator'] = 'not';
 	$handler->display->display_options['filters']['uri_1']['value'] = 'pdfthumbs';
-	
+	 */
+	 
 	/* Display: Block */
 	$handler = $view->new_display('block', 'Block', 'block');
   // Export ends here.

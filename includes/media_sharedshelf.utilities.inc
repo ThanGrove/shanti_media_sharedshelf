@@ -1336,10 +1336,12 @@ function _media_sharedshelf_add_metadata($file, $ssid = FALSE) {
 			}
 		}
 		// Add thumbnail for pdfs
+		/* just using sharedshelf thumbs
 		if ($ssid && _media_sharedshelf_is_pdf($ssid)) {
 			$thumb = _media_sharedshelf_create_pdf_thumb($ssid);
 
 		}
+*/
 
 		// Create a single text block containing all the SharedShelf metadata
 		// which will be used strictly for Solr document creation.
@@ -1387,6 +1389,7 @@ function _media_sharedshelf_find_data_key($data, $subst) {
  * 	The file object representing the thumb image added for PDF
  *
  */
+ /* Just using the direct thumb from Sharedshelf without storing on site
 function _media_sharedshelf_create_pdf_thumb($ssid) {
 	$dir = MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER;
 	if (file_prepare_directory($dir, FILE_CREATE_DIRECTORY)) {
@@ -1399,6 +1402,7 @@ function _media_sharedshelf_create_pdf_thumb($ssid) {
 		drupal_set_message(t('Media_sharedshelf Module could not create or write to the pdf thumbnail directory: @dir', array('@dir' => MEDIA_SHAREDSHELF_PDF_THUMB_FOLDER)), 'warning', FALSE);
 	}
 }
+*/
 
 /**
  * Process the raw (solr search) data from Shared Shelf to get all project-custom field values for item
