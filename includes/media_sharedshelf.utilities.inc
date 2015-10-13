@@ -1156,11 +1156,12 @@ function _media_sharedshelf_get_asset_metadata($asset_id) {
 	if (is_numeric($asset_id)) {
 		// Need basic asset data to get project ID to retrieve the metadata labels.
 		$data = _media_sharedshelf_api_assets_get($asset_id);
+		$project_id = $data['asset'][0]['project_id'];
 		// Can only get metadata with labels using a project search. So create a
 		// filter for the project search that contains this asset only.
 		$id_filter = array();
 		array_push($id_filter, _media_sharedshelf_create_search_filter('id', $asset_id, 'numeric', 'eq'));
-		$result = _media_sharedshelf_api_project_assets_get($data['asset'][0]['project_id'], 0, 1, TRUE, '', $id_filter);
+		$result = _media_sharedshelf_api_project_assets_get($project_id, 0, 1, TRUE, '', $id_filter);
 		// Get column mappings so that correct fields are displayed in results.
 		$proj_columns = _media_sharedshelf_get_columns_mapping($result['metaData']);
 		// Loop through all the column mappings to create an array containing
@@ -1204,6 +1205,7 @@ function _media_sharedshelf_get_asset_metadata($asset_id) {
 			}
 		}
 	}
+	$metadata['Project ID'] = $project_id;
 	return $metadata;
 }
 

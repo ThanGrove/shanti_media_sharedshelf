@@ -113,6 +113,18 @@ function media_sharedshelf_basic_fields() {
         'description' => t('Title for the work.'),
       ),
     ),
+    // Added by ndg8f, 2015-10-12
+  	'projectid' => array(
+      'field_name' => 'field_sharedshelf_project_id',
+      'type' => 'text',
+      'cardinality' => 1,
+      'default' => '',
+      'locked' => TRUE,
+      'settings' => array(
+        'label' => t('Project ID'),
+        'description' => t('ID for the Shared Shelf Project to which this image belongs'),
+      ),
+    ),  // End of add
     'place' => array(
       'field_name' => 'field_sharedshelf_place',
       'type' => 'text_long',
