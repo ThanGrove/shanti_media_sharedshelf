@@ -68,6 +68,8 @@ function media_sharedshelf_install() {
 			field_create_instance($instance);
 		}
 	}
+	$ssdir = 'public://media-sharedshelf/';
+	file_prepare_directory($ssdir, FILE_CREATE_DIRECTORY);
 	return array();
 }
 
