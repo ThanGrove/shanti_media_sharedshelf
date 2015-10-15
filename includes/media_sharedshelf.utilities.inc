@@ -25,12 +25,12 @@ function _media_sharedshelf_api_account_post($email, $password) {
 	$response = drupal_http_request(url(media_sharedshelf_variable_get('host_server') . '/account'), $options);
 	switch ($response->code) {
 		case 200 :
-			$data = json_decode($response -> data, TRUE);
+			$data = json_decode($response->data, TRUE);
 			// Successful access is indicated in a flag passed back in the JSON data.
 			if (isset($data['success'])) {
 				if ($data['success'] == 1) {
-					if (isset($response -> headers['set-cookie'])) {
-						$cookies = explode(',', $response -> headers['set-cookie']);
+					if (isset($response->headers['set-cookie'])) {
+						$cookies = explode(',', $response->headers['set-cookie']);
 						if (is_array($cookies)) {
 							foreach ($cookies as $cookie) {
 								// Expected cookie to send back with each call is sharedshelf one.
@@ -43,7 +43,7 @@ function _media_sharedshelf_api_account_post($email, $password) {
 								$error = 'Invalid SharedShelf cookie returned. API changes may have been made.';
 							}
 						} else {
-							$sharedshelf_cookies = $response -> headers['set-cookie'];
+							$sharedshelf_cookies = $response->headers['set-cookie'];
 						}
 					}
 				} else {
@@ -72,9 +72,9 @@ function _media_sharedshelf_api_account_post($email, $password) {
 
 		default :
 			// If we got here there is an issue, so we want to log the error.
-			$error_message = isset($response -> error) ? $response -> error : '';
-			$status_message = isset($response -> status_message) ? $response -> status_message : '';
-			_media_sharedshelf_error_log($error_message, $response -> code, $status_message);
+			$error_message = isset($response->error) ? $response->error : '';
+			$status_message = isset($response->status_message) ? $response->status_message : '';
+			_media_sharedshelf_error_log($error_message, $response->code, $status_message);
 	}
 	return $sharedshelf_cookies;
 }
@@ -114,16 +114,16 @@ function _media_sharedshelf_api_account_get() {
 		case 200 :
 			// Since the request may have been submitted again because of access
 			// issues, make sure response is good before attempting to get data.
-			if ($response -> code == 200) {
-				$account_status = json_decode($response -> data, TRUE);
+			if ($response->code == 200) {
+				$account_status = json_decode($response->data, TRUE);
 			}
 			break;
 
 		default :
 			// If we got here there is an issue, so we want to log the error.
-			$error_message = isset($response -> error) ? $response -> error : '';
-			$status_message = isset($response -> status_message) ? $response -> status_message : '';
-			_media_sharedshelf_error_log($error_message, $response -> code, $status_message);
+			$error_message = isset($response->error) ? $response->error : '';
+			$status_message = isset($response->status_message) ? $response->status_message : '';
+			_media_sharedshelf_error_log($error_message, $response->code, $status_message);
 	}
 	return $account_status;
 }
@@ -164,16 +164,16 @@ function _media_sharedshelf_api_projects_get() {
 		case 200 :
 			// Since the request may have been submitted again because of access
 			// issues, make sure response is good before attempting to get data.
-			if ($response -> code == 200) {
-				$projects = json_decode($response -> data, TRUE);
+			if ($response->code == 200) {
+				$projects = json_decode($response->data, TRUE);
 			}
 			break;
 
 		default :
 			// If we got here there is an issue, so we want to log the error.
-			$error_message = isset($response -> error) ? $response -> error : '';
-			$status_message = isset($response -> status_message) ? $response -> status_message : '';
-			_media_sharedshelf_error_log($error_message, $response -> code, $status_message);
+			$error_message = isset($response->error) ? $response->error : '';
+			$status_message = isset($response->status_message) ? $response->status_message : '';
+			_media_sharedshelf_error_log($error_message, $response->code, $status_message);
 	}
 	return $projects;
 }
@@ -250,16 +250,16 @@ function _media_sharedshelf_api_project_assets_get($project_id, $start_page = 0,
 		case 200 :
 			// Since the request may have been submitted again because of access
 			// issues, make sure response is good before attempting to get data.
-			if ($response -> code == 200) {
-				$result = json_decode($response -> data, TRUE);
+			if ($response->code == 200) {
+				$result = json_decode($response->data, TRUE);
 			}
 			break;
 
 		default :
 			// If we got here there is an issue, so we want to log the error.
-			$error_message = isset($response -> error) ? $response -> error : '';
-			$status_message = isset($response -> status_message) ? $response -> status_message : '';
-			_media_sharedshelf_error_log($error_message, $response -> code, $status_message);
+			$error_message = isset($response->error) ? $response->error : '';
+			$status_message = isset($response->status_message) ? $response->status_message : '';
+			_media_sharedshelf_error_log($error_message, $response->code, $status_message);
 	}
 	return $result;
 }
@@ -301,16 +301,16 @@ function _media_sharedshelf_api_project_asset_groups_get($project_id) {
 		case 200 :
 			// Since the request may have been submitted again because of access
 			// issues, make sure response is good before attempting to get data.
-			if ($response -> code == 200) {
-				$result = json_decode($response -> data, TRUE);
+			if ($response->code == 200) {
+				$result = json_decode($response->data, TRUE);
 			}
 			break;
 
 		default :
 			// If we got here there is an issue, so we want to log the error.
-			$error_message = isset($response -> error) ? $response -> error : '';
-			$status_message = isset($response -> status_message) ? $response -> status_message : '';
-			_media_sharedshelf_error_log($error_message, $response -> code, $status_message);
+			$error_message = isset($response->error) ? $response->error : '';
+			$status_message = isset($response->status_message) ? $response->status_message : '';
+			_media_sharedshelf_error_log($error_message, $response->code, $status_message);
 	}
 	return $result;
 }
@@ -387,16 +387,16 @@ function _media_sharedshelf_api_asset_group_assets_get($asset_group_id, $start_p
 		case 200 :
 			// Since the request may have been submitted again because of access
 			// issues, make sure response is good before attempting to get the data.
-			if ($response -> code == 200) {
-				$result = json_decode($response -> data, TRUE);
+			if ($response->code == 200) {
+				$result = json_decode($response->data, TRUE);
 			}
 			break;
 
 		default :
 			// If we got here there is an issue, so we want to log the error.
-			$error_message = isset($response -> error) ? $response -> error : '';
-			$status_message = isset($response -> status_message) ? $response -> status_message : '';
-			_media_sharedshelf_error_log($error_message, $response -> code, $status_message);
+			$error_message = isset($response->error) ? $response->error : '';
+			$status_message = isset($response->status_message) ? $response->status_message : '';
+			_media_sharedshelf_error_log($error_message, $response->code, $status_message);
 	}
 	return $result;
 }
@@ -428,7 +428,7 @@ function _media_sharedshelf_api_representation_size_get($asset_id, $size = 0) {
 	// Check Cache for previously made calls
 	$cache_var = "sharedshelf_{$asset_id}_{$size}";
 	if ($cache = cache_get($cache_var)) {
-		return $cache -> data;
+		return $cache->data;
 	}
 
 	$representation = array('mimetype' => '', 'bytestream' => '');
@@ -448,19 +448,19 @@ function _media_sharedshelf_api_representation_size_get($asset_id, $size = 0) {
 		case 404 :
 			// Since the request may have been submitted again because of access
 			// issues, make sure response is good before attempting to get the data.
-			if ($response -> code == 200) {
-				$representation['mimetype'] = $response -> headers['content-type'];
-				$representation['bytestream'] = $response -> data;
-			} elseif ($response -> code == 404) {
+			if ($response->code == 200) {
+				$representation['mimetype'] = $response->headers['content-type'];
+				$representation['bytestream'] = $response->data;
+			} elseif ($response->code == 404) {
 				$representation = FALSE;
 			}
 			break;
 
 		default :
 			// If we got here there is an issue, so we want to log the error.
-			$error_message = isset($response -> error) ? $response -> error : '';
-			$status_message = isset($response -> status_message) ? $response -> status_message : '';
-			_media_sharedshelf_error_log($error_message, $response -> code, $status_message);
+			$error_message = isset($response->error) ? $response->error : '';
+			$status_message = isset($response->status_message) ? $response->status_message : '';
+			_media_sharedshelf_error_log($error_message, $response->code, $status_message);
 	}
 	//watchdog('media_sharedshelf cache', $cache_var);
 	cache_set($cache_var, $representation, 'cache');
@@ -503,16 +503,16 @@ function _media_sharedshelf_api_assets_get($asset_id) {
 		case 200 :
 			// Since the request may have been submitted again because of access
 			// issues, make sure response is good before attempting to get the data.
-			if ($response -> code == 200) {
-				$result = json_decode($response -> data, TRUE);
+			if ($response->code == 200) {
+				$result = json_decode($response->data, TRUE);
 			}
 			break;
 
 		default :
 			// If we got here there is an issue, so we want to log the error.
-			$error_message = isset($response -> error) ? $response -> error : '';
-			$status_message = isset($response -> status_message) ? $response -> status_message : '';
-			_media_sharedshelf_error_log($error_message, $response -> code, $status_message);
+			$error_message = isset($response->error) ? $response->error : '';
+			$status_message = isset($response->status_message) ? $response->status_message : '';
+			_media_sharedshelf_error_log($error_message, $response->code, $status_message);
 	}
 	return $result;
 }
@@ -541,7 +541,7 @@ function _media_sharedshelf_api_assets_representation_details_get($asset_id) {
 	global $_media_sharedshelf_cookies;
 	$cache_var = "sharedshelf_repdetails_${asset_id}";
 	if ($cacheval = cache_get($cache_var)) {
-		$result = $cacheval -> data;
+		$result = $cacheval->data;
 		if (is_object($result)) { $result = (array)$result;
 		}
 		if (isset($result['url']) && isset($result['name'])) {
@@ -567,19 +567,19 @@ function _media_sharedshelf_api_assets_representation_details_get($asset_id) {
 		case 200 :
 			// Since the request may have been submitted again because of access
 			// issues, make sure response is good before attempting to get the data.
-			if ($response -> code == 200) {
-				$result = json_decode($response -> data, TRUE);
+			if ($response->code == 200) {
+				$result = json_decode($response->data, TRUE);
 			}
 			break;
 
 		default :
 			// If we got here there is an issue, so we want to log the error.
-			$error_message = isset($response -> error) ? $response -> error : '';
-			$status_message = isset($response -> status_message) ? $response -> status_message : '';
-			_media_sharedshelf_error_log($error_message, $response -> code, $status_message);
+			$error_message = isset($response->error) ? $response- error : '';
+			$status_message = isset($response->status_message) ? $response->status_message : '';
+			_media_sharedshelf_error_log($error_message, $response->code, $status_message);
 	}
 	//if (isset($response)) {dpm($response, 'response');} *
-	if ($response -> data == '{"success": true}') {
+	if ($response->data == '{"success": true}') {
 		$result = json_decode('{"name": "ss_noimage-0.png", "success": true, "url": "http://catalog.sharedshelf.artstor.org/images/ss_noimage-0.png"}');
 	}
 	if (is_object($result)) { $result = (array)$result;
@@ -822,20 +822,21 @@ function _media_sharedshelf_get_image_full_size_url($image_reference) {
 			case 303 :
 			case 307 :
 				// Image URL moved temporarily so redirect.
-				$response = drupal_http_request(url($response -> location), $options);
+				$response = drupal_http_request(url($response->location), $options);
 			default :
 			// Do nothing if a different response code was returned from first call.
 		}
+		$url = '';
 		switch ($response->code) {
 			case 302 :
 				// Item found but has a different location for the actual item.
-				$url = $response -> location;
+				$url = $response->location;
 				break;
 
 			case -1002 :
 				// The schema is missing: from testing it appears that http and the
 				// domain are not included in the header Location value.
-				$url = media_sharedshelf_variable_get('host_server') . $response -> redirect_url;
+				$url = media_sharedshelf_variable_get('host_server') . $response->redirect_url;
 				break;
 
 			case 200 :
@@ -844,12 +845,12 @@ function _media_sharedshelf_get_image_full_size_url($image_reference) {
 
 			default :
 				// If we got here there is an issue, so we want to log the error.
-				$error_message = isset($response -> error) ? $response -> error : '';
+				$error_message = isset($response->error) ? $response->error : '';
 				$error_message .= " ($image_reference)";
-				$status_message = isset($response -> status_message) ? $response -> status_message : '';
-				_media_sharedshelf_error_log($error_message, $response -> code, $status_message);
-				if (isset($response -> redirect_url)) {
-					_media_sharedshelf_error_log($response -> redirect_url);
+				$status_message = isset($response->status_message) ? $response->status_message : '';
+				_media_sharedshelf_error_log($error_message, $response->code, $status_message);
+				if (isset($response->redirect_url)) {
+					_media_sharedshelf_error_log($response->redirect_url);
 				}
 		}
 	}
@@ -1279,7 +1280,7 @@ function _media_sharedshelf_add_metadata($file, $ssid = FALSE) {
 
 	// Attach the SharedShelf metadata to the local item and save it.
 	// Get metadata for the image if we know the asset id.
-	if ($ssid || $asset_id = _media_sharedshelf_get_asset_id($file -> uri)) {
+	if ($ssid || $asset_id = _media_sharedshelf_get_asset_id($file->uri)) {
 		$asset_id = ($ssid) ? $ssid : $asset_id;
 		$data = _media_sharedshelf_get_asset_metadata($asset_id);
 		// Use an entity wrapper to retrieve the fields for this file.
@@ -1297,9 +1298,9 @@ function _media_sharedshelf_add_metadata($file, $ssid = FALSE) {
 					$ttxt = substr($ttxt, 0, strrpos($ttxt, ' ')) . '...';
 				}
 				try {
-					$wrapper -> {'field_file_image_title_text'} -> set($ttxt);
+					$wrapper->{'field_file_image_title_text'}->set($ttxt);
 				} catch (EntityMetadataWrapperException $emwe) {
-					watchdog('media_sharedshelf.utilities.inc: 1319', $emwe -> getMessage());
+					watchdog('media_sharedshelf.utilities.inc: 1319', $emwe->getMessage());
 				}
 			}
 		}
@@ -1318,21 +1319,21 @@ function _media_sharedshelf_add_metadata($file, $ssid = FALSE) {
 			// End of add
 			if (!empty($field_value)) {// was isset($data[$info['settings']['label']]) etc. below
 				if ($info['settings']['label'] == 'Title') {
-					$file -> filename = $field_value;
+					$file->filename = $field_value;
 					// Use Title field for file name (may result in multiple file nodes with the same name)
-					$wrapper -> {'field_file_image_alt_text'} -> set($field_value);
+					$wrapper->{'field_file_image_alt_text'}->set($field_value);
 				}
 				if ($info['cardinality'] == FIELD_CARDINALITY_UNLIMITED) {
 					if (is_array($field_value)) {
-						$wrapper -> {$info['field_name']} -> set($field_value);
+						$wrapper->{$info['field_name']}->set($field_value);
 					} else {
-						$wrapper -> {$info['field_name']} -> set(array($field_value));
+						$wrapper->{$info['field_name']}->set(array($field_value));
 					}
 				} elseif ($info['cardinality'] == '1') {
 					if (is_array($field_value)) {
-						$wrapper -> {$info['field_name']} -> set(implode($field_value));
+						$wrapper->{$info['field_name']}->set(implode($field_value));
 					} else {
-						$wrapper -> {$info['field_name']} -> set($field_value);
+						$wrapper->{$info['field_name']}->set($field_value);
 					}
 				}
 			}
@@ -1357,8 +1358,8 @@ function _media_sharedshelf_add_metadata($file, $ssid = FALSE) {
 			}
 			$solr_search_data .= "\n";
 		}
-		$wrapper -> {$basic_fields['solr_search_data']['field_name']} -> set($solr_search_data);
-		$wrapper -> save();
+		$wrapper->{$basic_fields['solr_search_data']['field_name']}->set($solr_search_data);
+		$wrapper->save();
 	}
 }
 
@@ -1413,7 +1414,7 @@ function _media_sharedshelf_create_pdf_thumb($ssid) {
  * 	The raw sharedshelf string with all field values stored as field_sharedshelf_solr_search
  *
  * @return array
- * 	An array of the processed shared shelf data in field label -> value pairs.
+ * 	An array of the processed shared shelf data in field label->value pairs.
  *
  */
 function _media_sharedshelf_process_raw($raw) {
@@ -1439,7 +1440,7 @@ function _media_sharedshelf_process_raw($raw) {
  * 	The type of file the raw data comes from, either image or pdf
  *
  * @return array
- * 	An array with two main items: metadata and fields. Each of these contains an array of label -> value pairs.
+ * 	An array with two main items: metadata and fields. Each of these contains an array of label->value pairs.
  *
  */
 function _media_sharedshelf_process_ssdata($raw, $type = 'image') {
