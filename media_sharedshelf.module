@@ -29,6 +29,7 @@ function media_sharedshelf_help($path, $arg) {
  function media_sharedshelf_admin_paths() {
  	return array(
 		'files/admin' => TRUE,
+		'media/add/media_sharedshelf' => TRUE,
 	);
  }
  
