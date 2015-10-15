@@ -24,6 +24,15 @@ function media_sharedshelf_help($path, $arg) {
 }
 
 /**
+ * Implements hook_admin_path() 
+ */
+ function media_sharedshelf_admin_paths() {
+ 	return array(
+		'files/admin' => TRUE,
+	);
+ }
+ 
+/**
  * Implements hook_permission().
  */
 function media_sharedshelf_permission() {
