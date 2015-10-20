@@ -613,6 +613,45 @@ function media_sharedshelf_wysiwyg_add_submit($form, &$form_state) {
 }
 
 /**
+ * Implements hook_image_default_styles
+ * 	Defines default image styles for shareshelf module
+ */
+function media_sharedshelf_image_default_styles() {
+  $styles = array();
+  $styles['media_large'] = array(
+    'label' => 'Media Large (w800)',
+    'effects' => array(
+      array(
+        'name' => 'image_scale',
+        'data' => array(
+        		'width' => 800,
+             'height' => '',
+        		'upscale' => 1,
+		),
+        'weight' => 0,
+      ),
+    ),
+  );
+  $styles['media_lightbox_large'] = array(
+    'label' => 'Media Lightbox Large (w1500)',
+    'effects' => array(
+      array(
+        'name' => 'image_scale',
+        'data' => array(
+          'width' => 1500,
+          'height' => '',
+          'upscale' => 1,
+        ),
+        'weight' => 0,
+      ),
+    ),
+  );
+
+  return $styles;
+}
+
+
+/**
  * Implement hook_file_presave to convert Spatial data to Geofield, if both exist
  * 
  * If the file entity has a geofield called field_spatial_coordinates and the Shared shelf metadata has spatial coordiates
@@ -634,6 +673,27 @@ function media_sharedshelf_wysiwyg_add_submit($form, &$form_state) {
 			//dpm($file, 'spatial coordinates added');
 		} 
 	}  
+ }
+ 
+ /**
+  * Implements hook_file_update
+  * 	calls create derivatives function
+  */
+ function media_sharedshelf_file_insert($file) {
+	_media_sharedshelf_create_img_derivatives($file->uri);
+ }
+ 
+ /**
+  * Function to create necessary derivatives.
+  */
+ function _media_sharedshelf_create_img_derivatives($uri) {
+	$uri = str_replace('sharedshelf://', 'public://media-sharedshelf/', $uri) . ".jpg";
+	$styles = array('media_large', 'media_lightbox_large');
+	foreach ($styles as $style) {
+		$destination = image_style_path($style, $uri);
+		$style = image_style_load($style);
+		$res = image_style_create_derivative($style, $uri, $destination);
+	}
  }
  
 /**
