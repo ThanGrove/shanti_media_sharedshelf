@@ -633,12 +633,12 @@ function media_sharedshelf_image_default_styles() {
     ),
   );
   $styles['media_lightbox_large'] = array(
-    'label' => 'Media Lightbox Large (w1500)',
+    'label' => 'Media Lightbox Large (w1200)',
     'effects' => array(
       array(
         'name' => 'image_scale',
         'data' => array(
-          'width' => 1500,
+          'width' => 1200,
           'height' => '',
           'upscale' => 1,
         ),
