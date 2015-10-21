@@ -676,10 +676,18 @@ function media_sharedshelf_image_default_styles() {
  }
  
  /**
-  * Implements hook_file_update
+  * Implements hook_file_insert
   * 	calls create derivatives function
   */
  function media_sharedshelf_file_insert($file) {
+	_media_sharedshelf_create_img_derivatives($file->uri);
+ }
+ 
+  /**
+  * Implements hook_file_save
+  * 	calls create derivatives function
+  */
+ function media_sharedshelf_file_save($file) {
 	_media_sharedshelf_create_img_derivatives($file->uri);
  }
  
