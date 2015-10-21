@@ -937,6 +937,7 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 			$file -> is_new = TRUE;
 			field_attach_insert('media', $file);
 			_media_sharedshelf_add_metadata($file, $ssid);
+			_media_sharedshelf_create_img_derivatives($file->uri);
 		} else {
 			_media_sharedshelf_error_log($error_message);
 			$success = FALSE;
