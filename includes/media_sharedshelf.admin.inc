@@ -813,7 +813,7 @@ function media_sharedshelf_add_ssid_submit($form, &$form_state) {
 	module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
 	if (_media_sharedshelf_is_pdf($form_state['values']['ssid']) || _media_sharedshelf_full_size_image_exists($form_state['values']['ssid'])) {
 		if (media_sharedshelf_add_media_object($form_state['values']['ssid'], $error_msg, $form, $form_state) !== FALSE) {
-			drupal_set_message("Resource {$form_state['values']['ssid']} was successfully imported.");
+			drupal_set_message("Resource {$form_state['values']['ssid']} was successfully imported by its ID.");
 		} else {
 			drupal_set_message("There was a problem importing resource {$form_state['values']['ssid']}.");
 		}
@@ -936,7 +936,7 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 			$file -> is_new = TRUE;
 			field_attach_insert('media', $file);
 			_media_sharedshelf_add_metadata($file, $ssid);
-			_media_sharedshelf_create_img_derivatives($file->uri);
+			media_sharedshelf_create_img_derivatives($file->uri);
 		} else {
 			_media_sharedshelf_error_log($error_message);
 			$success = FALSE;

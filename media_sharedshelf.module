@@ -680,7 +680,7 @@ function media_sharedshelf_image_default_styles() {
   * 	calls create derivatives function
   */
  function media_sharedshelf_file_insert($file) {
-	_media_sharedshelf_create_img_derivatives($file->uri);
+	media_sharedshelf_create_img_derivatives($file->uri);
  }
  
   /**
@@ -688,20 +688,15 @@ function media_sharedshelf_image_default_styles() {
   * 	calls create derivatives function
   */
  function media_sharedshelf_file_save($file) {
-	_media_sharedshelf_create_img_derivatives($file->uri);
+	media_sharedshelf_create_img_derivatives($file->uri);
  }
  
  /**
-  * Function to create necessary derivatives.
+  * Function to create necessary image derivatives.
   */
- function _media_sharedshelf_create_img_derivatives($uri) {
-	$uri = str_replace('sharedshelf://', 'public://media-sharedshelf/', $uri) . ".jpg";
-	$styles = array('media_large', 'media_lightbox_large');
-	foreach ($styles as $style) {
-		$destination = image_style_path($style, $uri);
-		$style = image_style_load($style);
-		$res = image_style_create_derivative($style, $uri, $destination);
-	}
+ function media_sharedshelf_create_img_derivatives($uri) {
+     module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
+     _media_sharedshelf_create_img_derivatives($uri);
  }
  
 /**

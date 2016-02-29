@@ -1469,3 +1469,17 @@ function _media_sharedshelf_process_ssdata($raw, $type = 'image') {
 	}
 	return $out;
 }
+
+ /**
+  * Function to create necessary image derivatives.
+  */
+ function _media_sharedshelf_create_img_derivatives($uri) {
+    $uri = str_replace('sharedshelf://', 'public://media-sharedshelf/', $uri) . ".jpg";
+    $styles = array('media_large', 'media_lightbox_large');
+    foreach ($styles as $style) {
+        $destination = image_style_path($style, $uri);
+        $style = image_style_load($style);
+        $res = image_style_create_derivative($style, $uri, $destination);
+    }
+ }
+ 
