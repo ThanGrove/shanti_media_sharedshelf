@@ -56,6 +56,7 @@ function media_sharedshelf_clear_cache($form, $form_state) {
  * Provides a way to add SharedShelf items to the Media module.
  */
 function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) {
+    
 	module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
 	$form = array();
 	$form['sharedshelf'] = array('#type' => 'vertical_tabs', );
@@ -999,6 +1000,7 @@ function media_sharedshelf_update_confirm_submit($form, &$form_state) {
  */
  function media_sharedshelf_collection_select() {
      global $user;
+     $defval = (isset($_GET['field_og_parent_collection_ref'])) ? $_GET['field_og_parent_collection_ref'] : 0;
     $gs = og_get_groups_by_user($user);
     $gs = $gs['node'];
     $gnodes = node_load_multiple($gs); // og_get_all_group()
@@ -1019,6 +1021,7 @@ function media_sharedshelf_update_confirm_submit($form, &$form_state) {
             'Subcollections' => $subgroups,
        ),
        '#empty_value' => t('None'),
+       '#default_value' => $defval,
        '#description' => t('Select the collection these item(s) should be associated with or none'),
     );
  }
