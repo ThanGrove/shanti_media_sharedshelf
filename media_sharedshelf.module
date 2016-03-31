@@ -212,6 +212,7 @@ function media_sharedshelf_form_alter(&$form, &$form_state, $form_id) {
 	if ($form_id == 'media_sharedshelf_add') {
 		drupal_add_css('.view-content .item { float: left; padding: 5px; } ', array( 'group' => CSS_THEME, 'type' => 'inline'));
 	}
+    
 }
 
 /**
@@ -755,4 +756,5 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
 		}
 	}
 }
+
 

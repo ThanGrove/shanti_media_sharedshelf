@@ -70,7 +70,9 @@ function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) 
 	$form['sharedshelf']['add_sharedshelf_id'] = array('#type' => 'fieldset', '#title' => t('Add Using SharedShelf ID'), );
 
 	$form['sharedshelf']['add_sharedshelf_id']['ssid'] = array('#type' => 'textfield', '#title' => t('SSID'), '#description' => t('Enter the SharedShelf ID for the image.'), );
-
+    
+    $form['sharedshelf']['add_sharedshelf_id']['collection_select'] = media_sharedshelf_collection_select();
+    
 	$form['sharedshelf']['add_sharedshelf_id']['reimport_metadata'] = array('#type' => 'checkbox', '#title' => t('Reimport Metadata'), '#description' => t('If checked, will reimport metadata from Shared Shelf for images already on this site. <br/><strong>Warning:</strong> This will overwrite the currently stored metadata (title, description, etc.) for this image.'), );
 
 	$form['sharedshelf']['add_sharedshelf_id']['submit_ssid'] = array('#type' => 'submit', '#name' => 'add_image', '#value' => t('Add'), );
@@ -106,6 +108,8 @@ function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) 
 	if (count($option_image_sets) > 0) {
 		$form['sharedshelf']['add_project_imageset']['project_sets']['image_sets'] = array('#type' => 'select', '#multiple' => TRUE, '#options' => $option_image_sets, );
 	}
+    
+    $form['sharedshelf']['add_project_imageset']['collection_select'] = media_sharedshelf_collection_select();
 
 	$form['sharedshelf']['add_project_imageset']['reimport_metadata'] = array('#type' => 'checkbox', '#title' => t('Reimport Metadata'), '#description' => t('If checked, will reimport metadata from Shared Shelf for images already on this site. <br/><strong>Warning:</strong> This will overwrite the currently stored metadata (title, description, etc.) for the images in this project.'), );
 
@@ -649,6 +653,7 @@ function media_sharedshelf_add_validate($form, &$form_state) {
 			}
 		}
 	} elseif ($form_state['triggering_element']['#name'] == 'add_image') {
+	    $form_state['values']['ssid'] = trim($form_state['values']['ssid']);
 		// SSID is an all numeric format.
 		if (!preg_match('@^\d+$@', $form_state['values']['ssid'])) {
 			form_set_error('ssid', t('Please enter digits for the SharedShelf image ID.'));
@@ -910,7 +915,9 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 	$success = 1;
 	// Define the appropriate internal URI to use e.g., sharedshelf://a/...
 	$uri = media_sharedshelf_media_parse($url);
-
+    
+    // Get desired collection association
+    $collid = (isset($form_state['values']['collection_select'])) ? $form_state['values']['collection_select'] : FALSE;
 	// Check to see this item is already added to the media.
 	$results = db_query("SELECT fid FROM {file_managed} WHERE uri LIKE :uri", array(':uri' => $uri)) -> fetchAll();
 
@@ -949,6 +956,10 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 			module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
 			if ($fid = $results[0] -> fid) {
 				$file = file_load($fid);
+                if ($collid) {
+                    $lang = field_language('file', $file, 'field_og_collection_ref');
+                    $file->field_og_collection_ref[$lang][0]['target_id'] = $collid;
+                }
 				_media_sharedshelf_add_metadata($file);
 			} else {
 				$success = FALSE;
@@ -982,3 +993,32 @@ function media_sharedshelf_update_confirm_submit($form, &$form_state) {
 	}
 	$form_state['redirect'] = "file/$fid/edit";
 }
+
+/**
+ * Get a select widget for user to choose which collection to import items to
+ */
+ function media_sharedshelf_collection_select() {
+     global $user;
+    $gs = og_get_groups_by_user($user);
+    $gs = $gs['node'];
+    $gnodes = node_load_multiple($gs); // og_get_all_group()
+    $groups = array();
+    $subgroups = array();
+    foreach($gnodes as $n => $group) {
+      if ($group->type == 'subcollection') {
+       $subgroups[$group->nid] = $group->title;
+      } else {
+        $groups[$group->nid] = $group->title;
+      }
+    }
+    return array(
+       '#type' => 'select',
+       '#title' => t('Target Collection'),
+       '#options' => array(
+            'Collections' => $groups,
+            'Subcollections' => $subgroups,
+       ),
+       '#empty_value' => t('None'),
+       '#description' => t('Select the collection these item(s) should be associated with or none'),
+    );
+ }
