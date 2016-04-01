@@ -761,7 +761,7 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
 /** Add a VBO Assign Collection actioin to the list of VBO actions for file admin view **/
  function media_sharedshelf_action_info() {
      return array(
-        'media_sharedshelf_assign_collection' => array(
+        'media_sharedshelf_assign_collection_action' => array(
           'type' => 'file',
           'label' => t('Assign file to a specific collection'),
           'behavior' => array('changes_property'),
@@ -772,14 +772,21 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
       );
  }
  
- function  media_sharedshelf_assign_collection_form($options) {
+ function  media_sharedshelf_assign_collection_action_form($options) {
     $form['colselect'] = media_sharedshelf_collection_select(TRUE);
     return $form;
 }
 
+function media_sharedshelf_assign_collection_action_submit($form, &$form_state) {
+    $cid = $form_state['values']['colselect'];
+    return array( 'cid' => $cid);
+}
+
 function media_sharedshelf_assign_collection_action(&$file, $context) {
-    $file->field_og_collection_ref['und'][0]['target_id'] = $context['settings']['colselect'];
-    file_save($file);
+    if (!empty($context['cid'])) {
+        $file->field_og_collection_ref['und'][0]['target_id'] = $context['cid'];
+        file_save($file);
+    }
 }
 
 /** Collection select: used above and also in admin on import forms **/
@@ -814,5 +821,3 @@ function media_sharedshelf_assign_collection_action(&$file, $context) {
        '#description' => t('Select the collection these item(s) should be imported into'),
     );
  }
-
-
