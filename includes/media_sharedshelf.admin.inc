@@ -1022,6 +1022,6 @@ function media_sharedshelf_update_confirm_submit($form, &$form_state) {
        ),
        '#empty_value' => t('None'),
        '#default_value' => $defval,
-       '#description' => t('Select the collection these item(s) should be associated with or none'),
+       '#description' => t('Select the collection, if any, these item(s) should be imported into'),
     );
  }
