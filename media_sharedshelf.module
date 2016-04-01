@@ -779,6 +779,8 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
 
 function media_sharedshelf_assign_collection_action_submit($form, &$form_state) {
     $cid = $form_state['values']['colselect'];
+    $coll = node_load($cid);
+    drupal_set_message('<em>You chose to move files to the following collection</em>: <strong>' . $coll->title . ' (' . $cid . ')</strong>.');
     return array( 'cid' => $cid);
 }
 
