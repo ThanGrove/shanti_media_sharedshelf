@@ -758,3 +758,61 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
 }
 
 
+/** Add a VBO Assign Collection actioin to the list of VBO actions for file admin view **/
+ function media_sharedshelf_action_info() {
+     return array(
+        'media_sharedshelf_assign_collection' => array(
+          'type' => 'file',
+          'label' => t('Assign file to a specific collection'),
+          'behavior' => array('changes_property'),
+          'configurable' => TRUE,
+          'vbo_configurable' => FALSE,
+          'triggers' => array('any'),
+        ),
+      );
+ }
+ 
+ function  media_sharedshelf_assign_collection_form($options) {
+    $form['colselect'] = media_sharedshelf_collection_select(TRUE);
+    return $form;
+}
+
+function media_sharedshelf_assign_collection_action(&$file, $context) {
+    $file->field_og_collection_ref['und'][0]['target_id'] = $context['settings']['colselect'];
+    file_save($file);
+}
+
+/** Collection select: used above and also in admin on import forms **/
+
+/**
+ * Get a select widget for user to choose which collection to import items to
+ */
+ function media_sharedshelf_collection_select($admin=FALSE) {
+    global $user;
+    $defval = (isset($_GET['field_og_parent_collection_ref'])) ? $_GET['field_og_parent_collection_ref'] : 0;
+    $gs = ($admin) ? og_get_all_group() : og_get_groups_by_user($user);
+    if (!$admin) { $gs = $gs['node']; }
+    $gnodes = node_load_multiple($gs); // og_get_all_group()
+    $groups = array();
+    $subgroups = array();
+    foreach($gnodes as $n => $group) {
+      if ($group->type == 'subcollection') {
+       $subgroups[$group->nid] = $group->title;
+      } else {
+        $groups[$group->nid] = $group->title;
+      }
+    }
+    return array(
+       '#type' => 'select',
+       '#title' => t('Target Collection'),
+       '#options' => array(
+            'Collections' => $groups,
+            'Subcollections' => $subgroups,
+       ),
+       '#empty_value' => t('None'),
+       '#default_value' => $defval,
+       '#description' => t('Select the collection these item(s) should be imported into'),
+    );
+ }
+
+

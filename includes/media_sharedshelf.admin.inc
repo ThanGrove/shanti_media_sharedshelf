@@ -72,7 +72,7 @@ function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) 
 
 	$form['sharedshelf']['add_sharedshelf_id']['ssid'] = array('#type' => 'textfield', '#title' => t('SSID'), '#description' => t('Enter the SharedShelf ID for the image.'), );
     
-    $form['sharedshelf']['add_sharedshelf_id']['collection_select'] = media_sharedshelf_collection_select();
+    $form['sharedshelf']['add_sharedshelf_id']['collection_select'] = media_sharedshelf_collection_select();  // See media_sharedshelf.module
     
 	$form['sharedshelf']['add_sharedshelf_id']['reimport_metadata'] = array('#type' => 'checkbox', '#title' => t('Reimport Metadata'), '#description' => t('If checked, will reimport metadata from Shared Shelf for images already on this site. <br/><strong>Warning:</strong> This will overwrite the currently stored metadata (title, description, etc.) for this image.'), );
 
@@ -110,7 +110,7 @@ function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) 
 		$form['sharedshelf']['add_project_imageset']['project_sets']['image_sets'] = array('#type' => 'select', '#multiple' => TRUE, '#options' => $option_image_sets, );
 	}
     
-    $form['sharedshelf']['add_project_imageset']['collection_select'] = media_sharedshelf_collection_select();
+    $form['sharedshelf']['add_project_imageset']['collection_select'] = media_sharedshelf_collection_select();   // See media_sharedshelf.module
 
 	$form['sharedshelf']['add_project_imageset']['reimport_metadata'] = array('#type' => 'checkbox', '#title' => t('Reimport Metadata'), '#description' => t('If checked, will reimport metadata from Shared Shelf for images already on this site. <br/><strong>Warning:</strong> This will overwrite the currently stored metadata (title, description, etc.) for the images in this project.'), );
 
@@ -460,7 +460,9 @@ function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) 
 			$form['sharedshelf']['add_from_search']['results']['next_page'] = array('#type' => 'button', '#name' => 'next_page_button', '#attributes' => array('onclick' => 'return false;'), '#value' => t('Next'), '#ajax' => array('callback' => 'media_sharedshelf_add_ajax_search_results_callback', 'wrapper' => 'sharedshelf-search-results-section', 'method' => 'replace', 'effect' => 'fade', 'keypress' => TRUE, ), );
 		}
 	}
-
+    
+    $form['sharedshelf']['add_from_search']['collection_select'] = media_sharedshelf_collection_select();   // See media_sharedshelf.module
+    
 	$form['sharedshelf']['add_from_search']['add_results'] = array('#type' => 'submit', '#name' => 'add_search_results', '#value' => t('Add'), );
 
 	return $form;
@@ -994,34 +996,3 @@ function media_sharedshelf_update_confirm_submit($form, &$form_state) {
 	}
 	$form_state['redirect'] = "file/$fid/edit";
 }
-
-/**
- * Get a select widget for user to choose which collection to import items to
- */
- function media_sharedshelf_collection_select() {
-     global $user;
-     $defval = (isset($_GET['field_og_parent_collection_ref'])) ? $_GET['field_og_parent_collection_ref'] : 0;
-    $gs = og_get_groups_by_user($user);
-    $gs = $gs['node'];
-    $gnodes = node_load_multiple($gs); // og_get_all_group()
-    $groups = array();
-    $subgroups = array();
-    foreach($gnodes as $n => $group) {
-      if ($group->type == 'subcollection') {
-       $subgroups[$group->nid] = $group->title;
-      } else {
-        $groups[$group->nid] = $group->title;
-      }
-    }
-    return array(
-       '#type' => 'select',
-       '#title' => t('Target Collection'),
-       '#options' => array(
-            'Collections' => $groups,
-            'Subcollections' => $subgroups,
-       ),
-       '#empty_value' => t('None'),
-       '#default_value' => $defval,
-       '#description' => t('Select the collection, if any, these item(s) should be imported into'),
-    );
- }
