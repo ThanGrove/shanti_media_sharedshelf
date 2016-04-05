@@ -72,7 +72,7 @@ function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) 
 
 	$form['sharedshelf']['add_sharedshelf_id']['ssid'] = array('#type' => 'textfield', '#title' => t('SSID'), '#description' => t('Enter the SharedShelf ID for the image.'), );
     
-    $form['sharedshelf']['add_sharedshelf_id']['collection_select'] = media_sharedshelf_collection_select();  // See media_sharedshelf.module
+    $form['sharedshelf']['add_sharedshelf_id']['collection_select_id'] = media_sharedshelf_collection_select();  // See media_sharedshelf.module
     
 	$form['sharedshelf']['add_sharedshelf_id']['reimport_metadata'] = array('#type' => 'checkbox', '#title' => t('Reimport Metadata'), '#description' => t('If checked, will reimport metadata from Shared Shelf for images already on this site. <br/><strong>Warning:</strong> This will overwrite the currently stored metadata (title, description, etc.) for this image.'), );
 
@@ -110,7 +110,7 @@ function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) 
 		$form['sharedshelf']['add_project_imageset']['project_sets']['image_sets'] = array('#type' => 'select', '#multiple' => TRUE, '#options' => $option_image_sets, );
 	}
     
-    $form['sharedshelf']['add_project_imageset']['collection_select'] = media_sharedshelf_collection_select();   // See media_sharedshelf.module
+    $form['sharedshelf']['add_project_imageset']['collection_select_project'] = media_sharedshelf_collection_select();   // See media_sharedshelf.module
 
 	$form['sharedshelf']['add_project_imageset']['reimport_metadata'] = array('#type' => 'checkbox', '#title' => t('Reimport Metadata'), '#description' => t('If checked, will reimport metadata from Shared Shelf for images already on this site. <br/><strong>Warning:</strong> This will overwrite the currently stored metadata (title, description, etc.) for the images in this project.'), );
 
@@ -461,7 +461,7 @@ function media_sharedshelf_add($form, &$form_state = array(), $redirect = NULL) 
 		}
 	}
     
-    $form['sharedshelf']['add_from_search']['collection_select'] = media_sharedshelf_collection_select();   // See media_sharedshelf.module
+    $form['sharedshelf']['add_from_search']['collection_select_search'] = media_sharedshelf_collection_select();   // See media_sharedshelf.module
     
 	$form['sharedshelf']['add_from_search']['add_results'] = array('#type' => 'submit', '#name' => 'add_search_results', '#value' => t('Add'), );
 
@@ -693,13 +693,15 @@ function media_sharedshelf_add_validate($form, &$form_state) {
  */
 function media_sharedshelf_add_submit($form, &$form_state) {
 	if ($form_state['triggering_element']['#name'] == 'add_project_imagesets') {
+	    $form_state['values']['collection_id'] = $form_state['values']['collection_select_project'];
 		media_sharedshelf_add_project_image_sets_submit($form, $form_state);
 	} elseif ($form_state['triggering_element']['#name'] == 'add_image') {
+        $form_state['values']['collection_id'] = $form_state['values']['collection_select_id'];
 		media_sharedshelf_add_ssid_submit($form, $form_state);
 	} elseif ($form_state['triggering_element']['#name'] == 'add_search_results') {
+        $form_state['values']['collection_id'] = $form_state['values']['collection_select_search'];
 		media_sharedshelf_add_search_submit($form, $form_state);
 	}
-	watchdog('media_sharedshelf.admin.inc', 'Clearing views data cache');
 	cache_clear_all('*', 'cache_views_data', TRUE);
 }
 
@@ -721,7 +723,6 @@ function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
 	$project_name = _media_sharedshelf_get_project_name($project_id);
 	$asset_groups = (isset($form_state['values']['image_sets'])) ? $form_state['values']['image_sets'] : array();
 	$reimport_str = ($form_state['values']['reimport_metadata'] == 1) ? "and updated" : "without updating metadata";
-
 	// If asset groups were selected then add all images associated with each
 	// asset group. Otherwise add all images associated with the project selected.
 	if (count($asset_groups) > 0) {
@@ -753,6 +754,12 @@ function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
 				} while ($i < $page_count);
 				if ($image_error_count == 0) {
 					drupal_set_message(check_plain(t('All images for the !assetgroupname set in the !projectname project were successfully added.', array('!assetgroupname' => $asset_group_name, '!projectname' => $project_name))));
+                    
+                        if (isset($form_state['values']['collection_id'])) {
+                            if ($node = node_load($form_state['values']['collection_id'])) {
+                                 drupal_set_message("Resource added to the {$node->type}: <a href=\"" . url("node/{$node->nid}") . "\">{$node->title}</a>.");
+                            }
+                        }
 				} else {
 					$errors = array('@errorcount' => $image_error_count, '!assetgroupname' => $asset_group_name, '!projectname' => $project_name, );
 					drupal_set_message(check_plain(t('There were @errorcount problems adding images for the !assetgroupname set in the !projectname project. Please view your site log for more details.', $errors), 'error'));
@@ -790,6 +797,12 @@ function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
 			} while ($i < $page_count);
 			if ($image_error_count == 0) {
 				drupal_set_message(check_plain(t('All images for the !projectname project were successfully added.', array('!projectname' => $project_name))));
+                
+                if (isset($form_state['values']['collection_id'])) {
+                    if ($node = node_load($form_state['values']['collection_id'])) {
+                         drupal_set_message("Resource added to the {$node->type}: <a href=\"" . url("node/{$node->nid}") . "\">{$node->title}</a>.");
+                    }
+                }
 			} else {
 				drupal_set_message(check_plain(t('There were @errorcount problems adding some of the images for the !projectname project.', array('@errorcount' => $image_error_count, '!projectname' => $project_name)), 'error'));
 			}
@@ -815,6 +828,7 @@ function media_sharedshelf_add_project_image_sets_submit($form, &$form_state) {
  *   The state of the form.
  */
 function media_sharedshelf_add_ssid_submit($form, &$form_state) {
+
 	//$ssid_url = media_sharedshelf_variable_get('host_server') . '/assets/' . $form_state['values']['ssid'] . '/representation';
 	$error_msg = 'An error occurred with SharedShelf image ID ' . $form_state['values']['ssid'] . 'and no file was saved.';
 	// Make sure asset has image before allowing it to be added.
@@ -822,6 +836,11 @@ function media_sharedshelf_add_ssid_submit($form, &$form_state) {
 	if (_media_sharedshelf_is_pdf($form_state['values']['ssid']) || _media_sharedshelf_full_size_image_exists($form_state['values']['ssid'])) {
 		if (media_sharedshelf_add_media_object($form_state['values']['ssid'], $error_msg, $form, $form_state) !== FALSE) {
 			drupal_set_message("Resource {$form_state['values']['ssid']} was successfully imported by its ID.");
+            if (isset($form_state['values']['collection_id'])) {
+                if ($node = node_load($form_state['values']['collection_id'])) {
+                    drupal_set_message("Resource added to the {$node->type}: <a href=\"" . url("node/{$node->nid}") . "\">{$node->title}</a>.");
+                }
+            }
 		} else {
 			drupal_set_message("There was a problem importing resource {$form_state['values']['ssid']}.");
 		}
@@ -894,6 +913,11 @@ function media_sharedshelf_add_search_submit($form, &$form_state) {
 		_media_sharedshelf_error_log($image_error_count . ' ShareShelf images out of ' . $image_count . ' could not be added.');
 	}
 	drupal_set_message(check_plain(t('@count SharedShelf images were successfully added.', array('@count' => ($image_count - $image_error_count)))));
+    if (isset($form_state['values']['collection_id'])) {
+        if ($node = node_load($form_state['values']['collection_id'])) {
+             drupal_set_message("Resource added to the {$node->type}: <a href=\"" . url("node/{$node->nid}") . "\">{$node->title}</a>.");
+        }
+    }
 }
 
 /**
@@ -920,7 +944,9 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 	$uri = media_sharedshelf_media_parse($url);
     
     // Get desired collection association
-    $collid = (isset($form_state['values']['collection_select'])) ? $form_state['values']['collection_select'] : FALSE;
+    $collid = (isset($form_state['values']['collection_id'])) ? $form_state['values']['collection_id'] : FALSE;
+    if ($collid == "None" || $collid == -1) { $collid = FALSE; }
+    
 	// Check to see this item is already added to the media.
 	$results = db_query("SELECT fid FROM {file_managed} WHERE uri LIKE :uri", array(':uri' => $uri)) -> fetchAll();
 
@@ -961,7 +987,7 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 				$file = file_load($fid);
                 if ($collid) {
                     $lang = field_language('file', $file, 'field_og_collection_ref');
-                    $file->field_og_collection_ref[$lang][0]['target_id'] = $collid;
+                    $file->field_og_collection_ref[$lang] = array( array(  'target_id' => $collid,  ), );
                 }
 				_media_sharedshelf_add_metadata($file);
 			} else {
