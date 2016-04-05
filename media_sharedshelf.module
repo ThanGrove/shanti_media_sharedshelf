@@ -798,7 +798,6 @@ function media_sharedshelf_assign_collection_action(&$file, $context) {
  */
  function media_sharedshelf_collection_select($admin=FALSE) {
     global $user;
-    $defval = (isset($_GET['field_og_parent_collection_ref'])) ? $_GET['field_og_parent_collection_ref'] : 0;
     $gs = ($admin) ? og_get_all_group() : og_get_groups_by_user($user);
     if (!$admin) { $gs = $gs['node']; }
     $gnodes = node_load_multiple($gs); // og_get_all_group()
@@ -811,15 +810,20 @@ function media_sharedshelf_assign_collection_action(&$file, $context) {
         $groups[$group->nid] = $group->title;
       }
     }
-    return array(
-       '#type' => 'select',
+
+    $selarr = array(
        '#title' => t('Target Collection'),
+       '#type' => 'select',
+       '#description' => t('Select the collection these item(s) should be imported into'),
+       '#empty_value' => -1,
+       '#required' => FALSE,
        '#options' => array(
             'Collections' => $groups,
             'Subcollections' => $subgroups,
        ),
-       '#empty_value' => t('None'),
-       '#default_value' => $defval,
-       '#description' => t('Select the collection these item(s) should be imported into'),
     );
+    if  (isset($_GET['field_og_parent_collection_ref'])) {
+        $selarr['#default_value'] = $_GET['field_og_parent_collection_ref'];
+    }
+    return $selarr;
  }
