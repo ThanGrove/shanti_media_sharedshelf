@@ -971,6 +971,10 @@ function media_sharedshelf_add_media_object($ssid, $error_message, $form, &$form
 			$file -> file[LANGUAGE_NONE][0] = (array)$file + $defaults;
 			$file -> is_new = TRUE;
 			field_attach_insert('media', $file);
+            if ($collid) {
+                $lang = field_language('file', $file, 'field_og_collection_ref');
+               $file->field_og_collection_ref[$lang] = array( array(  'target_id' => $collid,  ), );
+            }
 			_media_sharedshelf_add_metadata($file, $ssid);
 			media_sharedshelf_create_img_derivatives($file->uri);
 		} else {
