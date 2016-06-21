@@ -693,6 +693,18 @@ function media_sharedshelf_image_default_styles() {
  }
  
  /**
+  * Implements hook_file_load
+  */
+  function media_sharedshelf_file_load($files) {
+      module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
+      foreach($files as $fid => $file) {
+          $ew = entity_metadata_wrapper('file', $file);
+          $raw = $ew->field_sharedshelf_solr_search->value();
+          $file->ssmetadata = _media_sharedshelf_process_raw($raw);
+      }
+  }
+  
+ /**
   * Function to create necessary image derivatives.
   */
  function media_sharedshelf_create_img_derivatives($uri) {

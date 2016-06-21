@@ -1421,11 +1421,18 @@ function _media_sharedshelf_process_raw($raw) {
 	$rar = explode("\n", $raw);
 	$ssfields = array();
 	foreach ($rar as $el) {
-		$field = explode(':', $el, 2);
-		if (count($field) == 2) {
-			$ssfields[$field[0]] = rtrim($field[1]);
-		} else {
-			$ssfields[$field[0]] = '';
+	    $field = explode(':', $el, 2);
+        if (count($field) == 2) {
+            $fnm = $field[0];
+            // Remove parenthetical elements from field label
+            if (strpos($fnm, '(') > -1) {
+                $pts = explode('(', $fnm);
+                $fnm = $pts[0];
+            }
+            $fval = rtrim($field[1]);
+            if ($fval) {
+	       		$ssfields[$fnm] = $fval;
+            }
 		}
 	}
 	return $ssfields;
@@ -1451,13 +1458,6 @@ function _media_sharedshelf_process_ssdata($raw, $type = 'image', $themed=TRUE) 
 	$out = array('ssmetadata' => '', 'ssfields' => '');
 	$inmeta = TRUE;
 	foreach ($ssfields as $fnm => $fval) {
-		$fval = rtrim($fval);
-		if (empty($fnm) || empty($fval)) { continue; } // Don't display empty fields
-		// Remove parenthetical elements from field label
-		if (strpos($fnm, '(') > -1) {
-			$pts = explode('(', $fnm);
-			$fnm = $pts[0];
-		}
         // create a lowercase class from the field name, replacing odd characters with dash
 		$class = str_replace(str_split(' \\/:*?"<>|+&!,'), '-', strtolower($fnm));
 		$theme_array = array('class' => 'field-name-' . $class, 'inline' => $inline, 'label' => $fnm, 'value' => $fval, );
