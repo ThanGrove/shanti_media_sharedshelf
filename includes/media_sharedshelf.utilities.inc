@@ -1312,8 +1312,8 @@ function _media_sharedshelf_add_metadata($file, $ssid = FALSE) {
 			$flabel = $info['settings']['label'];
 			$field_value = (isset($data[$flabel])) ? $data[$flabel] : FALSE;
 			if (!$field_value) {
-				$dkey = _media_sharedshelf_find_data_key($data, $flabel);
-				if ($dkey && isset($data[$dkey])) { $field_value = $data[$dkey];
+        				$dkey = _media_sharedshelf_find_data_key($data, $flabel);
+        				if ($dkey && isset($data[$dkey])) { $field_value = $data[$dkey];
 				}
 			}
 			// End of add
@@ -1438,33 +1438,42 @@ function _media_sharedshelf_process_raw($raw) {
  * 	The raw sharedshelf string with all field values stored as field_sharedshelf_solr_search
  * @param string $type
  * 	The type of file the raw data comes from, either image or pdf
+ * @param boolean $themed
+ * Whether or not the output should be themed as a field
  *
  * @return array
- * 	An array with two main items: metadata and fields. Each of these contains an array of label->value pairs.
+ * 	An array with two main items: metadata and fields. Each of these marked up list of those values.
  *
  */
-function _media_sharedshelf_process_ssdata($raw, $type = 'image') {
+function _media_sharedshelf_process_ssdata($raw, $type = 'image', $themed=TRUE) {
 	$inline = ($type == 'pdf') ? TRUE : FALSE;
 	$ssfields = _media_sharedshelf_process_raw($raw);
 	$out = array('ssmetadata' => '', 'ssfields' => '');
 	$inmeta = TRUE;
 	foreach ($ssfields as $fnm => $fval) {
 		$fval = rtrim($fval);
-		if (empty($fnm) || empty($fval)) {
-			continue;
-		}
+		if (empty($fnm) || empty($fval)) { continue; } // Don't display empty fields
+		// Remove parenthetical elements from field label
 		if (strpos($fnm, '(') > -1) {
 			$pts = explode('(', $fnm);
 			$fnm = $pts[0];
 		}
+        // create a lowercase class from the field name, replacing odd characters with dash
 		$class = str_replace(str_split(' \\/:*?"<>|+&!,'), '-', strtolower($fnm));
 		$theme_array = array('class' => 'field-name-' . $class, 'inline' => $inline, 'label' => $fnm, 'value' => $fval, );
 		if ($inmeta) {
-			$out['ssmetadata'] .= theme('media_sharedshelf_custom_field', $theme_array);
-			if ($fnm == 'Updated By') { $inmeta = FALSE;
-			}
+    			if ($themed)  {
+    			    $out['ssmetadata'] .= theme('media_sharedshelf_custom_field', $theme_array);
+            } else {
+                $out['ssmetadata'] .= '<li class="' . $class . '"><label>' . $fnm . ':</label> ' . $fval . '</li>';
+            }
+    			if ($fnm == 'Updated By') { $inmeta = FALSE; } // TODO: Fix this, switches to in-meta as false after Updated
 		} else {
-			$out['ssfields'] .= theme('media_sharedshelf_custom_field', $theme_array);
+		    if ($themed) {
+        			$out['ssfields'] .= theme('media_sharedshelf_custom_field', $theme_array);
+            } else {
+                $out['ssfields'] .= '<li class="' . $class . '"><label>' . $fnm . ':</label> ' . $fval . '</li>';
+            }
 		}
 	}
 	return $out;

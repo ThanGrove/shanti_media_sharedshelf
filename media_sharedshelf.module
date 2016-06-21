@@ -711,6 +711,7 @@ function media_sharedshelf_file_delete($file) {
  * Implements hook_preprocess_html to adjust global body clases and the like
  */
 function media_sharedshelf_preprocess_html(&$variables) {
+    
 	// Add "pdf" to body class if pdf file (for styling)
 	$sysmain = (isset($variables['page']['content']['system_main'])) ? $variables['page']['content']['system_main'] : FALSE;
 	// First check if it's a file entity
@@ -747,14 +748,15 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
 		$uri = str_replace('sharedshelf://a/', 'public://media-sharedshelf/', $variables['uri']);
 		$variables['image_url'] = image_style_url($style_name, $uri);
 	}
-	if ($variables['view_mode'] == 'full') {
-		if (isset($variables['field_sharedshelf_solr_search'][0]['value'])) {
-			module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
-			$type = (strpos($variables['filemime'], 'pdf') > -1) ? 'pdf' : 'image';
-			$ssfields = _media_sharedshelf_process_ssdata($variables['field_sharedshelf_solr_search'][0]['value'], $type);
-			$variables += $ssfields;
-		}
+    // Add sharedshelf metadata
+	if (isset($variables['field_sharedshelf_solr_search']['und'][0]['value'])) {
+	    $themed = ($variables['view_mode'] == "full") ? TRUE : FALSE; 
+		module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
+		$type = (strpos($variables['filemime'], 'pdf') > -1) ? 'pdf' : 'image';
+		$ssfields = _media_sharedshelf_process_ssdata($variables['field_sharedshelf_solr_search']['und'][0]['value'], $type, $themed);
+		$variables += $ssfields;
 	}
+	//dpm($variables, 'vars in pp fe');
 }
 
 
