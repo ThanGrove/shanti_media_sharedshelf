@@ -163,7 +163,6 @@ function media_sharedshelf_uninstall() {
 function media_sharedshelf_update_7000() {
 	$myschema = media_sharedshelf_schema();
     $mytablename = array_pop(array_keys($myschema));
-    drupal_set_message("Adding table: " . $mytablename);
     db_create_table($mytablename, $myschema[$mytablename]);
 }
 
