@@ -9,6 +9,7 @@ dependencies[] = media_internet (>=7.x-2.0-alpha3)
 dependencies[] = entity
 dependencies[] = views
 dependencies[] = apachesolr_file
+dependencies[] = encrypt
 files[] = includes/MediaSharedShelfStreamWrapper.inc
 files[] = includes/MediaSharedShelfMediaInternetHandler.inc
 files[] = includes/MediaSharedShelfStyles.inc

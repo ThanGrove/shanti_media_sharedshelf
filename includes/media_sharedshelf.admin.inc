@@ -42,6 +42,23 @@ function media_sharedshelf_settings_form() {
 	return system_settings_form($form);
 }
 
+
+/**
+ * Callback for /user/configure/sharedshelf.
+ *
+ * Provides form for entering Shared Shelf credentials
+ */
+function media_sharedshelf_user_form($form, &$form_state) {
+    
+    $form = array();
+    $form['ssuser'] = array('#type' => 'fieldset', '#title' => t('SharedShelf API'), '#description' => t('You need to have an account for <a href="@sharedshelf" target="_blank">ARTstor\'s SharedShelf</a>.', array('@sharedshelf' => MEDIA_SHAREDSHELF_MAIN_URL)), );
+    $form['ssuser'][] = array('#type' => 'textfield', '#title' => t('SharedShelf Login Email'), '#default_value' => media_sharedshelf_variable_get('login_email'), '#description' => t('Please enter your SharedShelf login email here.'), );
+    $form['ssuser'][media_sharedshelf_variable_name('login_password')] = array('#type' => 'password', '#title' => t('SharedShelf Login Password'), '#default_value' => media_sharedshelf_variable_get('login_password'), '#description' => t('Please enter your SharedShelf login password here.'), );
+
+    return $form;
+}
+
+
 /**
  * Clear the Drupal cache for Shared shelf HTTP calls. Called from settings form submit button
  */

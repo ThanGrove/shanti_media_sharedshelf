@@ -10,6 +10,57 @@
  * examples.)
  */
 
+ /**
+  * Implements hook_schema(), defines table for shared shelf user info
+  *     sssinfo : table name standing for Shanti Shared Shelf Info.
+  */
+ function media_sharedshelf_schema() {
+    $schema['shanti_ss_info'] = array(
+        'description' => 'Table for shared shelf information.',
+        'fields' => array(
+            'rid' => array(
+                'description' => 'The row id for this table of sharedshelf info',
+                'type' => 'serial',
+                'unsigned' => TRUE,
+                'not null' => TRUE),
+            'uid' => array(
+                'description' => 'The user id connected with this info',
+                'type' => 'int',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+                'default' => 0),
+            'un' => array(
+                'description' => 'The shared shelf username',
+                'type' => 'varchar',
+                'length' => 512,
+                'not null' => TRUE,
+                'default' => ''),
+            'pw' => array(
+                'description' => 'Other info',
+                'type' => 'varchar',
+                'length' => 1024,
+                'not null' => TRUE,
+                'default' => ''),
+            'created' => array(
+                'description' => 'The Unix timestamp when the row was created.',
+                'type' => 'int',
+                'not null' => TRUE,
+                'default' => 0),
+            'changed' => array(
+                'description' => 'The Unix timestamp when the row was most recently saved.',
+                'type' => 'int',
+                'not null' => TRUE,
+              'default' => 0),
+        ),
+        'unique keys' => array(
+            'rid'     => array('rid'),
+            'uid'     => array('uid'),
+        ),
+        'primary key' => array('rid'),
+    );
+    return $schema;
+ }
+  
 /**
  * Implements hook_field_schema().
  */
@@ -107,52 +158,13 @@ function media_sharedshelf_uninstall() {
 }
 
 /**
- * Attach shared shelf logon info fields to user entity
+ * Call new schema definition to create table for shared shelf info.
  */
 function media_sharedshelf_update_7000() {
-	// Attach shared shelf logon info fields to user entity
-	$fields = media_sharedshelf_user_fields();
-	foreach ($fields as $field) {
-		field_create_field($field);
-	}
-	$instances = array(
-		'ssid' => array(
-			'field_name' => 'field_shared_shelf_id', 
-			'entity_type' => 'user', 
-			'bundle' => 'user', 
-			'label' => 'Your Shared Shelf ID', 
-			'widget' => array('type' => 'text', ), 
-		), 
-		'sspwd' => array(
-			'field_name' => 'field_shared_shelf_password', 
-			'entity_type' => 'user', 
-			'bundle' => 'user', 
-			'label' => 'Your Shared Shelf Password', 
-			'widget' => array('type' => 'text', ), ), 
-		);
-	foreach ($instances as $instance) {
-		field_create_instance($instance);
-	}
+	$myschema = media_sharedshelf_schema();
+    $mytablename = array_pop(array_keys($myschema));
+    drupal_set_message("Adding table: " . $mytablename);
+    db_create_table($mytablename, $myschema[$mytablename]);
 }
 
-function media_sharedshelf_user_fields() {
-	return array(
-		'ssid' => array(
-			'field_name' => 'field_shared_shelf_id', 
-			'type' => 'text', 
-		), 	
-		'sspwd' => array(
-			'field_name' => 'field_shared_shelf_password', 
-			'type' => 'text', 
-		), 
-	);
-}
-
-
-/**
- * Attach shared shelf logon info fields to user entity
- */
-function media_sharedshelf_update_7001() {
-	// Attach shared shelf logon info fields to user entity
-}
 	
