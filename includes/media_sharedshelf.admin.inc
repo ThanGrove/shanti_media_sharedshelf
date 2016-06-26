@@ -51,8 +51,8 @@ function media_sharedshelf_settings_form() {
 function media_sharedshelf_ssuser_form($form, &$form_state) {
     global $user;
     $form = array();
-    $form['ssuser'] = array('#type' => 'fieldset', '#title' => t('SharedShelf API'), '#description' => t('In order to import images into this site, you need to have an account for <a href="@sharedshelf" target="_blank">ARTstor\'s SharedShelf</a>.', array('@sharedshelf' => MEDIA_SHAREDSHELF_MAIN_URL)), );
-    $form['ssuser']['user'] = array('#type'=>'markup', '#markup' => '<p><strong>User: </strong> ' . $user->name . ' (' . $user->uid . ')</p>');
+    $form['ssuser'] = array('#type' => 'fieldset', '#title' => t('SharedShelf API'), '#description' => t('In order to import images into this site, you need to have an account for <a href="@sharedshelf" target="_blank">ARTstor\'s SharedShelf</a>. Please enter your Shared Shelf logon information below. It will be stored in a secure encrypted format.', array('@sharedshelf' => MEDIA_SHAREDSHELF_MAIN_URL)), );
+    $form['ssuser']['user'] = array('#type'=>'hidden', '#value' => "name: {$user->name}, uid: {$user->uid}");
     $form['ssuser']['email'] = array('#type' => 'textfield', '#title' => t('SharedShelf Login Email'), '#default_value' => media_sharedshelf_variable_get('login_email'), '#description' => t('Please enter your SharedShelf login email here.'), '#required' => TRUE,);
     $form['ssuser']['password'] = array('#type' => 'password', '#title' => t('SharedShelf Login Password'), '#default_value' => media_sharedshelf_variable_get('login_password'), '#description' => t('Please enter your SharedShelf login password here.'), '#required' => FALSE, );
     $form['ssuser']['submit'] = array('#type' => 'submit', '#value' => t('Save'), '#attributes'=> array('title' => 'Save my info in an encrypted format'));
@@ -81,11 +81,12 @@ function media_sharedshelf_ssuser_form_validate($form, &$form_state)  {
 function media_sharedshelf_ssuser_form_submit($form, &$form_state)  {
     $info = array( 'email' => $form_state['values']['email'], 'pwd' => $form_state['values']['password']);
     if (_media_sharedshelf_ssuser_info_save($info)) {
+        drupal_set_message(t('Your Shared Shelf information has been encrypted and saved.'));
         if ($returl = $form_state['values']['redirect']) {
             drupal_goto($returl);
         }
     } else {
-        drupal_set_message(t('Your Shared Shelf information could not be save. Please contact an administrator.'));
+        drupal_set_message(t('Your Shared Shelf information could not be save. Please contact an administrator.'), 'warning');
     }
 }
 
@@ -134,9 +135,9 @@ function _media_sharedshelf_ssuser_info_delete() {
     $uid = $user->uid;
     $rid = db_delete('shanti_ss_info')->condition('uid', $uid)->execute();
     if ($rid > 0) {
-        drupal_set_message('Your encrypted information has been deleted from the database.');
+        drupal_set_message(t('Your encrypted information has been deleted from the database.'));
     } else {
-        drupal_set_message('There has been a problem deleting your encrypted information from the database. Please contact an administrator.');
+        drupal_set_message(t('Your information cannot be deleted, since it has not been saved in the database yet.'), 'warning');
     }
 }
 
