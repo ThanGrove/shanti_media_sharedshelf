@@ -48,16 +48,113 @@ function media_sharedshelf_settings_form() {
  *
  * Provides form for entering Shared Shelf credentials
  */
-function media_sharedshelf_user_form($form, &$form_state) {
-    
+function media_sharedshelf_ssuser_form($form, &$form_state) {
+    global $user;
     $form = array();
-    $form['ssuser'] = array('#type' => 'fieldset', '#title' => t('SharedShelf API'), '#description' => t('You need to have an account for <a href="@sharedshelf" target="_blank">ARTstor\'s SharedShelf</a>.', array('@sharedshelf' => MEDIA_SHAREDSHELF_MAIN_URL)), );
-    $form['ssuser'][] = array('#type' => 'textfield', '#title' => t('SharedShelf Login Email'), '#default_value' => media_sharedshelf_variable_get('login_email'), '#description' => t('Please enter your SharedShelf login email here.'), );
-    $form['ssuser'][media_sharedshelf_variable_name('login_password')] = array('#type' => 'password', '#title' => t('SharedShelf Login Password'), '#default_value' => media_sharedshelf_variable_get('login_password'), '#description' => t('Please enter your SharedShelf login password here.'), );
-
+    $form['ssuser'] = array('#type' => 'fieldset', '#title' => t('SharedShelf API'), '#description' => t('In order to import images into this site, you need to have an account for <a href="@sharedshelf" target="_blank">ARTstor\'s SharedShelf</a>.', array('@sharedshelf' => MEDIA_SHAREDSHELF_MAIN_URL)), );
+    $form['ssuser']['user'] = array('#type'=>'markup', '#markup' => '<p><strong>User: </strong> ' . $user->name . ' (' . $user->uid . ')</p>');
+    $form['ssuser']['email'] = array('#type' => 'textfield', '#title' => t('SharedShelf Login Email'), '#default_value' => media_sharedshelf_variable_get('login_email'), '#description' => t('Please enter your SharedShelf login email here.'), '#required' => TRUE,);
+    $form['ssuser']['password'] = array('#type' => 'password', '#title' => t('SharedShelf Login Password'), '#default_value' => media_sharedshelf_variable_get('login_password'), '#description' => t('Please enter your SharedShelf login password here.'), '#required' => FALSE, );
+    $form['ssuser']['submit'] = array('#type' => 'submit', '#value' => t('Save'), '#attributes'=> array('title' => 'Save my info in an encrypted format'));
+    $form['ssuser']['remove'] = array('#type' => 'button', '#name'=>'delete', '#value' => t('Remove Info'), '#attributes'=> array('title' => 'Remove my encrypted info from the database'));
+    // Get redirect url if set in query
+    $qparams = drupal_get_query_parameters();
+    $retval =  (isset($qparams['redirect'])) ? $qparams['redirect'] : FALSE;
+    $form['ssuser']['redirect'] = array('#type' => 'hidden', '#value' =>$retval);
     return $form;
 }
 
+/**
+ * Validate function for ssuser form submit. Catches the delete button click. Requires password if save button is clicked.
+ */
+function media_sharedshelf_ssuser_form_validate($form, &$form_state)  {
+    if ($form_state['triggering_element']['#name'] == 'delete') {
+        _media_sharedshelf_ssuser_info_delete();
+        if ($returl = $form_state['values']['redirect']) {
+            drupal_goto($returl);
+        }
+    } else if (empty($form_state['input']['password'])) {
+        form_set_error('password', t('Your SharedShelf password in order to access your images. Please enter it in the space provided.'));
+    }
+}
+
+function media_sharedshelf_ssuser_form_submit($form, &$form_state)  {
+    $info = array( 'email' => $form_state['values']['email'], 'pwd' => $form_state['values']['password']);
+    if (_media_sharedshelf_ssuser_info_save($info)) {
+        if ($returl = $form_state['values']['redirect']) {
+            drupal_goto($returl);
+        }
+    } else {
+        drupal_set_message(t('Your Shared Shelf information could not be save. Please contact an administrator.'));
+    }
+}
+
+/**
+ * Saves Shared shelf credentials 
+ */
+function _media_sharedshelf_ssuser_info_save($info) {
+    global $user;
+    $uid = $user->uid;
+    $email = encrypt($info['email']);
+    $pwd = encrypt($info['pwd']);
+    if (isset($info['email'], $info['pwd'])) {
+        if (isset($info['uid'])) {  $uid = $info['uid']; }
+        // If they have already saved a password use that row
+        if (_media_sharedshelf_ssuser_info_get($uid)) {
+            $rid = db_update('shanti_ss_info')
+                        ->fields(array(
+                                'un' => $email,
+                                'pw' => $pwd,
+                                'changed' => time(),
+                            ))
+                         ->condition('uid', $uid)
+                         ->execute();
+           if ($rid > 0) { return TRUE; }
+        } else {
+            $rid = db_insert('shanti_ss_info')
+                        ->fields(array(
+                                'uid' => $user->uid,
+                                'un' => $email,
+                                'pw' => $pwd,
+                                'created' => time(),
+                                'changed' => time(),
+                            ))
+                         ->execute();
+            if ($rid > 0) { return TRUE; }
+        }
+    }
+    return FALSE;
+}
+
+/**
+ * Deletes saved Shared shelf credentials 
+ */
+function _media_sharedshelf_ssuser_info_delete() {
+    global $user;
+    $uid = $user->uid;
+    $rid = db_delete('shanti_ss_info')->condition('uid', $uid)->execute();
+    if ($rid > 0) {
+        drupal_set_message('Your encrypted information has been deleted from the database.');
+    } else {
+        drupal_set_message('There has been a problem deleting your encrypted information from the database. Please contact an administrator.');
+    }
+}
+
+/**
+ * Looks up info for current user's sharedshelf account and returns it or FALSE if not found
+ * Returns an array with 'email' and 'pwd' keys.
+ */
+function _media_sharedshelf_ssuser_info_get($uid) {
+    $res = db_select('shanti_ss_info', 'ss')->fields('ss')->condition('uid', $uid)->execute()->fetchAssoc();
+    if ($res) {
+        $info = array(
+            'email' => decrypt($res['un']),
+            'pwd' => decrypt($res['pw']),
+        );
+        return $info;
+    }
+    return FALSE;
+}
 
 /**
  * Clear the Drupal cache for Shared shelf HTTP calls. Called from settings form submit button

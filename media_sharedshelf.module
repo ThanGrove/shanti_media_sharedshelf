@@ -66,12 +66,12 @@ function media_sharedshelf_menu() {
     'file' => 'includes/media_sharedshelf.admin.inc',
   );
   // Form for entering user SS credentials
-  $items['user/configure/sharedshelf'] = array(
+  $items['user/config/sharedshelf'] = array(
     'title' => 'SharedShelf API settings',
     'description' => 'Configure required user settings for Media: SharedShelf.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('media_sharedshelf_user_form'),
-    'access arguments' => array('configure Media SharedShelf'),
+    'page arguments' => array('media_sharedshelf_ssuser_form'),
+    'access arguments' => array('user_is_logged_in'),
     'file' => 'includes/media_sharedshelf.admin.inc',
   );
   // Add a menu item to the media admin configuration for default settings to
