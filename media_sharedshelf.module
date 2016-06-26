@@ -67,7 +67,7 @@ function media_sharedshelf_menu() {
   );
   // Form for entering user SS credentials
   $items['user/config/sharedshelf'] = array(
-    'title' => 'SharedShelf API settings',
+    'title' => 'SharedShelf User Account Settings',
     'description' => 'Configure required user settings for Media: SharedShelf.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('media_sharedshelf_ssuser_form'),

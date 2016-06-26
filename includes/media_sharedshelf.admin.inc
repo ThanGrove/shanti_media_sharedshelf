@@ -51,7 +51,7 @@ function media_sharedshelf_settings_form() {
 function media_sharedshelf_ssuser_form($form, &$form_state) {
     global $user;
     $form = array();
-    $form['ssuser'] = array('#type' => 'fieldset', '#title' => t('SharedShelf API'), '#description' => t('In order to import images into this site, you need to have an account for <a href="@sharedshelf" target="_blank">ARTstor\'s SharedShelf</a>. Please enter your Shared Shelf logon information below. It will be stored in a secure encrypted format.', array('@sharedshelf' => MEDIA_SHAREDSHELF_MAIN_URL)), );
+    $form['ssuser'] = array('#type' => 'fieldset', '#title' => t('SharedShelf Account Settings'), '#description' => t('In order to import images into this site, you need to have an account for <a href="@sharedshelf" target="_blank">ARTstor\'s SharedShelf</a>. <br/>Please enter your Shared Shelf logon information below. It will be stored in a secure encrypted format.', array('@sharedshelf' => MEDIA_SHAREDSHELF_MAIN_URL)), );
     $form['ssuser']['user'] = array('#type'=>'hidden', '#value' => "name: {$user->name}, uid: {$user->uid}");
     $form['ssuser']['email'] = array('#type' => 'textfield', '#title' => t('SharedShelf Login Email'), '#default_value' => media_sharedshelf_variable_get('login_email'), '#description' => t('Please enter your SharedShelf login email here.'), '#required' => TRUE,);
     $form['ssuser']['password'] = array('#type' => 'password', '#title' => t('SharedShelf Login Password'), '#default_value' => media_sharedshelf_variable_get('login_password'), '#description' => t('Please enter your SharedShelf login password here.'), '#required' => FALSE, );
