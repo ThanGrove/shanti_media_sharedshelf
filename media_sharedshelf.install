@@ -41,6 +41,12 @@
                 'length' => 1024,
                 'not null' => TRUE,
                 'default' => ''),
+            'defproj' => array(
+                'description' => 'Default Project',
+                'type' => 'int',
+                'unsigned' => TRUE,
+                'not null' => TRUE,
+                'default' => 0),
             'created' => array(
                 'description' => 'The Unix timestamp when the row was created.',
                 'type' => 'int',
@@ -165,5 +171,15 @@ function media_sharedshelf_update_7000() {
     $mytablename = array_pop(array_keys($myschema));
     db_create_table($mytablename, $myschema[$mytablename]);
 }
+
+/**
+ * Remove old system variables with Sharedshelf information
+ */
+ function media_sharedshelf_update_7001() {
+     module_load_include('inc', 'media_sharedshelf',  'includes/media_sharedshelf.variables');
+     variable_del(media_sharedshelf_variable_name('login_email'));
+     variable_del(media_sharedshelf_variable_name('login_password'));
+     variable_del(media_sharedshelf_variable_name('default_project'));
+ }
 
 	

@@ -9,6 +9,9 @@
  *
  * Provides configuring the necessary authentication for SharedShelf API access.
  */
+ 
+ /*
+    // Replaced by media_sharedshelf_ssuser_form() so users can individually enter their credentials
 function media_sharedshelf_api_form() {
 	$form = array();
 	$form['api'] = array('#type' => 'fieldset', '#title' => t('SharedShelf API'), '#description' => t('You need to have an account for <a href="@sharedshelf" target="_blank">ARTstor\'s SharedShelf</a>.', array('@sharedshelf' => MEDIA_SHAREDSHELF_MAIN_URL)), );
@@ -18,6 +21,7 @@ function media_sharedshelf_api_form() {
 
 	return system_settings_form($form);
 }
+
 
 /**
  * Callback for /admin/configure/media/media_sharedshelf/settings.
@@ -29,14 +33,15 @@ function media_sharedshelf_settings_form() {
 	module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
 	$form = array();
 	$form['media_settings'] = array('#type' => 'fieldset', '#title' => t('SharedShelf Media Settings'), );
-	$form['media_settings']['image_settings'] = array('#type' => 'fieldset', '#title' => t('Image Performance Settings'), '#description' => filter_xss(t('Indicate the image size to download to local cache when using !addmedia.', array('!addmedia' => l(t('Add media from SharedShelf'), check_plain('admin/content/media/add/media_sharedshelf'))))), );
+    $form['media_settings']['image_settings'] = array('#type' => 'fieldset', '#title' => t('Image Performance Settings'), '#description' => filter_xss(t('Indicate the image size to download to local cache when using !addmedia.', array('!addmedia' => l(t('Add media from SharedShelf'), check_plain('admin/content/media/add/media_sharedshelf'))))), );
 	$form['media_settings']['image_settings'][media_sharedshelf_variable_name('local_cache_image_size')] = array('#type' => 'select', '#title' => t('Local Cache Image Size'), '#default_value' => media_sharedshelf_variable_get('local_cache_image_size'), '#description' => t('Please specify the image size to pull down to local cache.'), '#options' => media_sharedshelf_image_sizes(), );
 
 	$form['media_settings']['image_settings']['clear_cache_button'] = array('#type' => 'button', '#value' => t('Clear Cache Variables'), '#submit' => cache_clear_all(), '#suffix' => '<div class="description">' . t('Clear stored results from Shared Shelf to refresh data. Use this when changes have been made in shared shelf that are not reflected on this site.') . '</div><div id="mss-cc-result"></div>', '#ajax' => array('callback' => 'media_sharedshelf_clear_cache', 'wrapper' => 'mss-cc-result', 'method' => 'replace', 'effect' => 'fade', ));
 
 	$form['media_settings']['form_defaults'] = array('#type' => 'fieldset', '#title' => t('Form Default Settings'), '#description' => t('These form default settings will be applied to the appropriate add content forms.'), );
-	$project_list = _media_sharedshelf_get_projects();
-	$form['media_settings']['form_defaults'][media_sharedshelf_variable_name('default_project')] = array('#type' => 'select', '#title' => t('Default Project'), '#description' => t('Choose a project to have selected whenever a project list is displayed.'), '#options' => ( array('0' => '') + $project_list), '#default_value' => media_sharedshelf_variable_get('default_project'), );
+	//$project_list = _media_sharedshelf_get_projects();
+	$form['media_settings']['form_defaults'][media_sharedshelf_variable_name('host_server')] = array('#type' => 'select', '#title' => t('SharedShelf Server'), '#default_value' => media_sharedshelf_variable_get('host_server'), '#description' => t('Please choose whether you want to access the production or demo version of SharedShelf.'), '#options' => media_sharedshelf_host_servers(), );
+    //$form['media_settings']['form_defaults'][media_sharedshelf_variable_name('default_project')] = array('#type' => 'select', '#title' => t('Default Project'), '#description' => t('Choose a project to have selected whenever a project list is displayed.'), '#options' => ( array('0' => '') + $project_list), '#default_value' => media_sharedshelf_variable_get('default_project'), );
 	$form['media_settings']['form_defaults'][media_sharedshelf_variable_name('search_images_per_page')] = array('#type' => 'select', '#title' => t('Images Per Page'), '#default_value' => media_sharedshelf_variable_get('search_images_per_page'), '#description' => t('Please select the number of images per project to display per page when showing search results.'), '#options' => media_sharedshelf_number_images_per_page(), );
 
 	return system_settings_form($form);
@@ -44,17 +49,22 @@ function media_sharedshelf_settings_form() {
 
 
 /**
- * Callback for /user/configure/sharedshelf.
+ * Callback for /user/configure/sharedshelf. Replaces media_sharedshelf_api_form()
  *
  * Provides form for entering Shared Shelf credentials
  */
 function media_sharedshelf_ssuser_form($form, &$form_state) {
+    module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
     global $user;
     $form = array();
     $form['ssuser'] = array('#type' => 'fieldset', '#title' => t('SharedShelf Account Settings'), '#description' => t('In order to import images into this site, you need to have an account for <a href="@sharedshelf" target="_blank">ARTstor\'s SharedShelf</a>. <br/>Please enter your Shared Shelf logon information below. It will be stored in a secure encrypted format.', array('@sharedshelf' => MEDIA_SHAREDSHELF_MAIN_URL)), );
     $form['ssuser']['user'] = array('#type'=>'hidden', '#value' => "name: {$user->name}, uid: {$user->uid}");
     $form['ssuser']['email'] = array('#type' => 'textfield', '#title' => t('SharedShelf Login Email'), '#default_value' => media_sharedshelf_variable_get('login_email'), '#description' => t('Please enter your SharedShelf login email here.'), '#required' => TRUE,);
     $form['ssuser']['password'] = array('#type' => 'password', '#title' => t('SharedShelf Login Password'), '#default_value' => media_sharedshelf_variable_get('login_password'), '#description' => t('Please enter your SharedShelf login password here.'), '#required' => FALSE, );
+    $project_list = _media_sharedshelf_get_projects();
+    if (!empty($project_list)) {
+        $form['ssuser']['default_project'] = array('#type' => 'select', '#title' => t('Default Project'), '#description' => t('Choose a project to have selected whenever a project list is displayed. You will have to reenter your password to set the default project.'), '#options' => ( array('0' => '') + $project_list), '#default_value' => media_sharedshelf_variable_get('default_project'), );
+    }
     $form['ssuser']['submit'] = array('#type' => 'submit', '#value' => t('Save'), '#attributes'=> array('title' => 'Save my info in an encrypted format'));
     $form['ssuser']['remove'] = array('#type' => 'button', '#name'=>'delete', '#value' => t('Remove Info'), '#attributes'=> array('title' => 'Remove my encrypted info from the database'));
     // Get redirect url if set in query
@@ -73,13 +83,35 @@ function media_sharedshelf_ssuser_form_validate($form, &$form_state)  {
         if ($returl = $form_state['values']['redirect']) {
             drupal_goto($returl);
         }
-    } else if (empty($form_state['input']['password'])) {
-        form_set_error('password', t('Your SharedShelf password in order to access your images. Please enter it in the space provided.'));
+    } else {
+        $errors = FALSE;
+        // Make sure the email address is a valid form.
+        $email = $form_state['values']['email'];
+        if (!valid_email_address($email)) {
+            form_set_error('login_email', t('The format of your email address is invalid.'));
+            $errors = TRUE;
+        }
+        // Make sure the password field is not empty.
+        $pwd = $form_state['values']['password'];
+        if (empty($pwd)) {
+            form_set_error('password', t('Your SharedShelf password in order to access your images. Please enter it in the space provided.'));
+            $errors = TRUE;
+        }
+        if (!$errors) {
+            // Save the email and password since they are not empty.
+            module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
+            // Login using the credentials from the admin settings form.
+            $_media_sharedshelf_cookies = _media_sharedshelf_api_account_post($email, $pwd);
+            if ($_media_sharedshelf_cookies == '') {
+                form_set_error('email', t('You did not enter a valid email/password combination. Please try again.'));
+            }
+        }
     }
 }
 
 function media_sharedshelf_ssuser_form_submit($form, &$form_state)  {
-    $info = array( 'email' => $form_state['values']['email'], 'pwd' => $form_state['values']['password']);
+    $project = (isset($form_state['values']['default_project'])) ?  $form_state['values']['default_project'] : 0;
+    $info = array( 'email' => $form_state['values']['email'], 'pwd' => $form_state['values']['password'], 'project'=>$project);
     if (_media_sharedshelf_ssuser_info_save($info)) {
         drupal_set_message(t('Your Shared Shelf information has been encrypted and saved.'));
         if ($returl = $form_state['values']['redirect']) {
@@ -106,6 +138,7 @@ function _media_sharedshelf_ssuser_info_save($info) {
                         ->fields(array(
                                 'un' => $email,
                                 'pw' => $pwd,
+                                'defproj' => $info['project'],
                                 'changed' => time(),
                             ))
                          ->condition('uid', $uid)
@@ -117,6 +150,7 @@ function _media_sharedshelf_ssuser_info_save($info) {
                                 'uid' => $user->uid,
                                 'un' => $email,
                                 'pw' => $pwd,
+                                'defproj' => $info['project'],
                                 'created' => time(),
                                 'changed' => time(),
                             ))
@@ -151,6 +185,7 @@ function _media_sharedshelf_ssuser_info_get($uid) {
         $info = array(
             'email' => decrypt($res['un']),
             'pwd' => decrypt($res['pw']),
+            'project' => $res['defproj'],
         );
         return $info;
     }
