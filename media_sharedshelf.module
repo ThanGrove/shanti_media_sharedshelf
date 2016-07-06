@@ -753,7 +753,8 @@ function media_sharedshelf_preprocess_file_entity(&$variables) {
 		}
 		if ($variables['view_mode'] == 'full') {
 			// If PDF full view, add iframe_url variable to Shared Shelf version of PDF
-			$variables['iframe_url'] = file_create_url($variables['uri']);
+			// Added '_noredirect' to fix problem with PDF downloading (MANU-2615)
+			$variables['iframe_url'] = file_create_url($variables['uri'] . '_noredirect');
 		}
 	} else {
 		$style_name = (in_array($variables['view_mode'], array('preview', 'teaser'))) ? 'media_thumbnail' : 'full';
