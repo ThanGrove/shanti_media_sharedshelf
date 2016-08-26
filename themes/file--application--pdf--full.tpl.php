@@ -114,7 +114,7 @@
 				    <?php
 				      // We hide the links now so that we can render them later.
 				      hide($content['links']);
-							hide($content['file']);
+					  hide($content['file']);
 				      //print render($content);
 							print $ssfields;
 				    ?>

@@ -726,7 +726,9 @@ function media_sharedshelf_image_default_styles() {
       foreach($files as $fid => $file) {
           $ew = entity_metadata_wrapper('file', $file);
           $raw = $ew->field_sharedshelf_solr_search->value();
-          $file->ssmetadata = _media_sharedshelf_process_raw($raw);
+          $meta = _media_sharedshelf_process_ssdata($raw);
+          $file->metadata = $meta['ssmetadata'];
+          $file->ssfields = $meta['ssfields'];
       }
   }
   

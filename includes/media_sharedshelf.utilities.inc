@@ -1423,17 +1423,10 @@ function _media_sharedshelf_process_raw($raw) {
 	foreach ($rar as $el) {
 	    $field = explode(':', $el, 2);
         if (count($field) == 2) {
-            $fnm = $field[0];
-            // Remove parenthetical elements from field label
-            if (strpos($fnm, '(') > -1) {
-                $pts = explode('(', $fnm);
-                $fnm = $pts[0];
-            }
-            $fval = rtrim($field[1]);
-            if ($fval) {
-	       		$ssfields[$fnm] = $fval;
-            }
-		}
+            $ssfields[$field[0]] = rtrim($field[1]);
+        } else {
+            $ssfields[$field[0]] = '';
+        }
 	}
 	return $ssfields;
 }
@@ -1442,21 +1435,19 @@ function _media_sharedshelf_process_raw($raw) {
  * Process ssdata into themed output for display in file records
  *
  * @param string $raw
- * 	The raw sharedshelf string with all field values stored as field_sharedshelf_solr_search
+ *  The raw sharedshelf string with all field values stored as field_sharedshelf_solr_search
  * @param string $type
- * 	The type of file the raw data comes from, either image or pdf
- * @param boolean $themed
- * Whether or not the output should be themed as a field
+ *  The type of file the raw data comes from, either image or pdf
  *
  * @return array
- * 	An array with two main items: metadata and fields. Each of these marked up list of those values.
+ *  An array with two main items: metadata and fields. Each of these contains an array of label->value pairs.
  *
  */
-function _media_sharedshelf_process_ssdata($raw, $type = 'image', $themed=TRUE) {
-	$inline = ($type == 'pdf') ? TRUE : FALSE;
-	$ssfields = _media_sharedshelf_process_raw($raw);
-	$out = array('ssmetadata' => '', 'ssfields' => '');
-	$inmeta = TRUE;
+function _media_sharedshelf_process_ssdata($raw, $type = 'image') {
+    $inline = ($type == 'pdf') ? TRUE : FALSE;
+    $ssfields = _media_sharedshelf_process_raw($raw);
+    $out = array('ssmetadata' => '', 'ssfields' => '');
+    $inmeta = TRUE;
     foreach ($ssfields as $fnm => $fval) {
         $fval = rtrim($fval);
         if (empty($fnm) || empty($fval)) {
@@ -1470,13 +1461,12 @@ function _media_sharedshelf_process_ssdata($raw, $type = 'image', $themed=TRUE) 
         $theme_array = array('class' => 'field-name-' . $class, 'inline' => $inline, 'label' => $fnm, 'value' => $fval, );
         if ($inmeta) {
             $out['ssmetadata'] .= theme('media_sharedshelf_custom_field', $theme_array);
-            if ($fnm == 'Updated By') { $inmeta = FALSE;
-            }
+            if ($fnm == 'Updated By') { $inmeta = FALSE; }
         } else {
             $out['ssfields'] .= theme('media_sharedshelf_custom_field', $theme_array);
         }
     }
-	return $out;
+    return $out;
 }
 
  /**
