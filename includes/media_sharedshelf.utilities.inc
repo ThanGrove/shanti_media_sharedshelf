@@ -1457,25 +1457,25 @@ function _media_sharedshelf_process_ssdata($raw, $type = 'image', $themed=TRUE) 
 	$ssfields = _media_sharedshelf_process_raw($raw);
 	$out = array('ssmetadata' => '', 'ssfields' => '');
 	$inmeta = TRUE;
-	foreach ($ssfields as $fnm => $fval) {
-        // create a lowercase class from the field name, replacing odd characters with dash
-		$class = str_replace(str_split(' \\/:*?"<>|+&!,'), '-', strtolower($fnm));
-		$theme_array = array('class' => 'field-name-' . $class, 'inline' => $inline, 'label' => $fnm, 'value' => $fval, );
-		if ($inmeta) {
-    			if ($themed)  {
-    			    $out['ssmetadata'] .= theme('media_sharedshelf_custom_field', $theme_array);
-            } else {
-                $out['ssmetadata'] .= '<li class="' . $class . '"><label>' . $fnm . ':</label> ' . $fval . '</li>';
+    foreach ($ssfields as $fnm => $fval) {
+        $fval = rtrim($fval);
+        if (empty($fnm) || empty($fval)) {
+            continue;
+        }
+        if (strpos($fnm, '(') > -1) {
+            $pts = explode('(', $fnm);
+            $fnm = $pts[0];
+        }
+        $class = str_replace(str_split(' \\/:*?"<>|+&!,'), '-', strtolower($fnm));
+        $theme_array = array('class' => 'field-name-' . $class, 'inline' => $inline, 'label' => $fnm, 'value' => $fval, );
+        if ($inmeta) {
+            $out['ssmetadata'] .= theme('media_sharedshelf_custom_field', $theme_array);
+            if ($fnm == 'Updated By') { $inmeta = FALSE;
             }
-    			if ($fnm == 'Updated By') { $inmeta = FALSE; } // TODO: Fix this, switches to in-meta as false after Updated
-		} else {
-		    if ($themed) {
-        			$out['ssfields'] .= theme('media_sharedshelf_custom_field', $theme_array);
-            } else {
-                $out['ssfields'] .= '<li class="' . $class . '"><label>' . $fnm . ':</label> ' . $fval . '</li>';
-            }
-		}
-	}
+        } else {
+            $out['ssfields'] .= theme('media_sharedshelf_custom_field', $theme_array);
+        }
+    }
 	return $out;
 }
 

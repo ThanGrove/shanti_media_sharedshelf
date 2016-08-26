@@ -86,6 +86,14 @@ function media_sharedshelf_menu() {
     'file' => 'includes/media_sharedshelf.admin.inc',
     'weight' => -1,
   );
+  // To act as a proxy for loading http:// shared shelf pdfs with titles
+  $items['media/sharedshelf/view/pdf/%'] = array(
+    'title' => 'View a SharedShelf PDF',
+    'page callback' => 'media_sharedshelf_view_pdf',
+    'page arguments' =>array(4),
+    'access arguments' => array('access content'),
+    'type' => MENU_NORMAL_ITEM,
+  );
 	// Path to update an images Shared Shelf metadata
 	// Calls media_sharedshelf_update_confirm in media_sharedshelf.admin.inc
 	$items['media/%/update'] = array(
@@ -415,8 +423,8 @@ function media_sharedshelf_wysiwyg_add($form, &$form_state = array()) {
   module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
 
   // Our search criteria can come from the form, or from the pager.
-  $project = isset($form_state['values']['project']) ? $form_state['values']['project'] : (isset($_GET['project']) ? $_GET['project'] : '0');
-  $keyword = isset($form_state['values']['keyword']) ? $form_state['values']['keyword'] : (isset($_GET['keyword']) ? $_GET['keyword'] : '');
+  $project = isset($form_state['values']['project']) ? $form_state['values']['project'] : (isset($_GET['project']) ? check_plain($_GET['project']) : '0');
+  $keyword = isset($form_state['values']['keyword']) ? $form_state['values']['keyword'] : (isset($_GET['keyword']) ? check_plain($_GET['keyword']) : '');
 
   // Retrieve the a list of projects from SharedShelf to use.
   $projects = _media_sharedshelf_get_projects();
@@ -692,6 +700,24 @@ function media_sharedshelf_image_default_styles() {
 	media_sharedshelf_create_img_derivatives($file->uri);
  }
  
+ /** Need to implement this for Images
+ function _media_sharedshelf_create_solr_doc($file) {
+     $doc[] = array(
+            'service' => SHANTI_KMAPS_ADMIN_SERVICE,
+            'asset_type' => variable_get('shanti_kmaps_fields_asset_type__' . $node->type),
+            'id' => $node->nid,
+            'uid' => SHANTI_KMAPS_ADMIN_SERVICE . '-' . $node->nid,
+            'url_html' => url(str_replace('__NID__', $node->nid, variable_get('shanti_kmaps_fields_url_html__' . $node->type)), array('absolute' => TRUE)),
+            'url_ajax' => url(str_replace('__NID__', $node->nid, variable_get('shanti_kmaps_fields_url_ajax__' . $node->type)), array('absolute' => TRUE)),
+            'url_json' => url(str_replace('__NID__', $node->nid, variable_get('shanti_kmaps_fields_url_json__' . $node->type)), array('absolute' => TRUE)),
+            'url_thumb' => url(str_replace('__NID__', $node->nid, variable_get('shanti_kmaps_fields_url_thumb__' . $node->type)), array('absolute' => TRUE)),
+            'caption' => $node->title,
+            'kmapid' => array_values(array_unique($kmapids)),
+            //'kmapid_strict' => array_unique($kmapids_strict),
+        );
+ }
+ */
+ 
  /**
   * Implements hook_file_load
   */
@@ -745,33 +771,39 @@ function media_sharedshelf_preprocess_html(&$variables) {
  *   For PDFs adds the iframe_url for displaying the pdf in page.
  */
 function media_sharedshelf_preprocess_file_entity(&$variables) {
-	global $base_url;
-	if ($variables['filemime'] == 'application/pdf') {
-		if (isset($variables['field_sharedshelf_ssid'][LANGUAGE_NONE][0]['value'])) {
-			$asset_id = $variables['field_sharedshelf_ssid'][LANGUAGE_NONE][0]['value'];
-			$variables['thumb_path'] = media_sharedshelf_variable_get('host_server') . "/assets/$asset_id/representation/size/3";
-		}
-		if ($variables['view_mode'] == 'full') {
-			// If PDF full view, add iframe_url variable to Shared Shelf version of PDF
-			// Added '_noredirect' to fix problem with PDF downloading (MANU-2615)
-			$variables['iframe_url'] = file_create_url($variables['uri'] . '_noredirect');
-		}
-	} else {
-		$style_name = (in_array($variables['view_mode'], array('preview', 'teaser'))) ? 'media_thumbnail' : 'full';
-		$uri = str_replace('sharedshelf://a/', 'public://media-sharedshelf/', $variables['uri']);
-		$variables['image_url'] = image_style_url($style_name, $uri);
-	}
-    // Add sharedshelf metadata
-	if (isset($variables['field_sharedshelf_solr_search']['und'][0]['value'])) {
-	    $themed = ($variables['view_mode'] == "full") ? TRUE : FALSE; 
-		module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
-		$type = (strpos($variables['filemime'], 'pdf') > -1) ? 'pdf' : 'image';
-		$ssfields = _media_sharedshelf_process_ssdata($variables['field_sharedshelf_solr_search']['und'][0]['value'], $type, $themed);
-		$variables += $ssfields;
-	}
-	//dpm($variables, 'vars in pp fe');
+    global $base_url, $base_path;
+    if ($variables['filemime'] == 'application/pdf') {
+        if (isset($variables['field_sharedshelf_ssid'][LANGUAGE_NONE][0]['value'])) {
+            $asset_id = $variables['field_sharedshelf_ssid'][LANGUAGE_NONE][0]['value'];
+            $variables['thumb_path'] = media_sharedshelf_variable_get('host_server') . "/assets/$asset_id/representation/size/3";
+        }
+        if ($variables['view_mode'] == 'full') {
+            $title = $variables['filename'];
+            // If PDF full view, add iframe_url variable to Shared Shelf version of PDF
+            $variables['iframe_url'] = '/media/sharedshelf/view/pdf/' . $title . '?url=' . file_create_url($variables['uri']) . '_noredirect';
+        }
+    } else {
+        $style_name = (in_array($variables['view_mode'], array('preview', 'teaser'))) ? 'media_thumbnail' : 'full';
+        $uri = str_replace('sharedshelf://a/', 'public://media-sharedshelf/', $variables['uri']);
+        $variables['image_url'] = image_style_url($style_name, $uri);
+    }
+    if ($variables['view_mode'] == 'full') {
+        if (isset($variables['field_sharedshelf_solr_search'][0]['value'])) {
+            module_load_include('inc', 'media_sharedshelf', 'includes/media_sharedshelf.utilities');
+            $type = (strpos($variables['filemime'], 'pdf') > -1) ? 'pdf' : 'image';
+            $ssfields = _media_sharedshelf_process_ssdata($variables['field_sharedshelf_solr_search'][0]['value'], $type);
+            $variables += $ssfields;
+        }
+    }
 }
 
+function media_sharedshelf_view_pdf($title) {
+    $qp = drupal_get_query_parameters();
+    $cnt = file_get_contents($qp['url']);
+    $type = get_headers($url, 1);
+    drupal_add_http_header('Content-Type', 'application/pdf');
+    print $cnt;
+}
 
 /** Add a VBO Assign Collection actioin to the list of VBO actions for file admin view **/
  function media_sharedshelf_action_info() {
